@@ -13,7 +13,7 @@ type BarangRepo interface {
 	GetBarang(tx *gorm.DB, id int) (*models.MasterBarang, error)
 	CreateBarang(tx *gorm.DB, data models.MasterBarang) (*models.MasterBarang, error)
 	UpdateBarang(tx *gorm.DB, data models.MasterBarang) error
-	DeleteBarang(ctx context.Context, id int) error
+	DeleteBarang(tx *gorm.DB, id int) error
 	GetAllBarangWithStok(ctx context.Context, offset, limit int) ([]models.MasterBarangWithStok, int64, error)
 }
 
@@ -104,7 +104,14 @@ func (s *BarangService) UpdateBarang(ctx context.Context, data models.MasterBara
 	})
 }
 func (s *BarangService) DeleteBarang(ctx context.Context, id int) error {
-	return s.barangRepo.DeleteBarang(ctx, id)
+	return s.DB.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		err := s.stokRepo.DeleteStok(tx, id)
+		if err != nil {
+			return err
+		}
+
+		return s.barangRepo.DeleteBarang(tx, id)
+	})
 }
 func (s *BarangService) GetAllBarangWithStok(ctx context.Context, page, limit int) ([]models.MasterBarangWithStok, int64, error) {
 	if page < 1 {

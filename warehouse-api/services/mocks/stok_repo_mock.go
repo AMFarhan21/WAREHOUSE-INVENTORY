@@ -66,6 +66,20 @@ func (mr *MockStokRepoMockRecorder) CreateStok(tx, data interface{}) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateStok", reflect.TypeOf((*MockStokRepo)(nil).CreateStok), tx, data)
 }
 
+// DeleteStok mocks base method.
+func (m *MockStokRepo) DeleteStok(tx *gorm.DB, barangID int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteStok", tx, barangID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteStok indicates an expected call of DeleteStok.
+func (mr *MockStokRepoMockRecorder) DeleteStok(tx, barangID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteStok", reflect.TypeOf((*MockStokRepo)(nil).DeleteStok), tx, barangID)
+}
+
 // GetAllStok mocks base method.
 func (m *MockStokRepo) GetAllStok(ctx context.Context, offset, limit int) ([]models.Mstok, int64, error) {
 	m.ctrl.T.Helper()

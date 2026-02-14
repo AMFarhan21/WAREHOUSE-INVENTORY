@@ -55,7 +55,7 @@
 			<div id="nav">
 				<select id="files">
 				
-				<option value="file0">warehouse/services/barang_service.go (77.3%)</option>
+				<option value="file0">warehouse/services/barang_service.go (77.1%)</option>
 				
 				<option value="file1">warehouse/services/pembelian_service.go (78.4%)</option>
 				
@@ -92,7 +92,7 @@ type BarangRepo interface {
         GetBarang(tx *gorm.DB, id int) (*models.MasterBarang, error)
         CreateBarang(tx *gorm.DB, data models.MasterBarang) (*models.MasterBarang, error)
         UpdateBarang(tx *gorm.DB, data models.MasterBarang) error
-        DeleteBarang(ctx context.Context, id int) error
+        DeleteBarang(tx *gorm.DB, id int) error
         GetAllBarangWithStok(ctx context.Context, offset, limit int) ([]models.MasterBarangWithStok, int64, error)
 }
 
@@ -183,8 +183,15 @@ func (s *BarangService) UpdateBarang(ctx context.Context, data models.MasterBara
         }</span>)
 }
 func (s *BarangService) DeleteBarang(ctx context.Context, id int) error <span class="cov8" title="1">{
-        return s.barangRepo.DeleteBarang(ctx, id)
-}</span>
+        return s.DB.WithContext(ctx).Transaction(func(tx *gorm.DB) error </span><span class="cov8" title="1">{
+                err := s.stokRepo.DeleteStok(tx, id)
+                if err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+
+                <span class="cov8" title="1">return s.barangRepo.DeleteBarang(tx, id)</span>
+        })
+}
 func (s *BarangService) GetAllBarangWithStok(ctx context.Context, page, limit int) ([]models.MasterBarangWithStok, int64, error) <span class="cov8" title="1">{
         if page &lt; 1 </span><span class="cov0" title="0">{
                 page = 1
@@ -567,6 +574,7 @@ type StokRepo interface {
         GetHistoryStokByBarangID(ctx context.Context, barangID int) ([]models.HistoryStok, error)
         CreateHistoryStok(tx *gorm.DB, data models.HistoryStok) (*models.HistoryStok, error)
         LockStok(tx *gorm.DB, barangID int) (*models.Mstok, error)
+        DeleteStok(tx *gorm.DB, barangID int) error
 }
 
 type StokService struct {

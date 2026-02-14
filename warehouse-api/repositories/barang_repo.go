@@ -29,7 +29,7 @@ func (r *BarangRepo) GetAllBarang(ctx context.Context, search string, offset, li
 	}
 
 	var masterBarang []models.MasterBarang
-	err := db.WithContext(ctx).Offset(offset).Limit(limit).Find(&masterBarang).Error
+	err := db.WithContext(ctx).Offset(offset).Limit(limit).Order("id DESC").Find(&masterBarang).Error
 	if err != nil {
 		return nil, 0, nil
 	}
@@ -93,8 +93,8 @@ func (r *BarangRepo) UpdateBarang(tx *gorm.DB, data models.MasterBarang) error {
 	return nil
 }
 
-func (r *BarangRepo) DeleteBarang(ctx context.Context, id int) error {
-	row := r.DB.Table("master_barang").WithContext(ctx).Where("id=?", id).Delete(models.MasterBarang{})
+func (r *BarangRepo) DeleteBarang(tx *gorm.DB, id int) error {
+	row := tx.Table("master_barang").Where("id=?", id).Delete(models.MasterBarang{})
 	err := row.Error
 	if err != nil {
 		return err

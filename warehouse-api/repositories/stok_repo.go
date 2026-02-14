@@ -119,3 +119,16 @@ func (r *StokRepo) LockStok(tx *gorm.DB, barangID int) (*models.Mstok, error) {
 
 	return &stok, nil
 }
+
+func (r *StokRepo) DeleteStok(tx *gorm.DB, barangID int) error {
+	row := tx.Table("mstok").Where("barang_id=?", barangID).Delete(&models.Mstok{})
+	if err := row.Error; err != nil {
+		return err
+	}
+
+	if row.RowsAffected == 0 {
+		return errors.New(response.ItemNotFound)
+	}
+
+	return nil
+}

@@ -8,6 +8,7 @@ import (
 	"warehouse/repositories"
 	"warehouse/services"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -39,6 +40,14 @@ func main() {
 
 	app := gin.Default()
 
+	// app.Use(cors.Default())
+	app.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:3000"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		AllowCredentials: true,
+	}))
+
 	router(app, cfg.JwtSecret, barangHandler, stokHandler, pembelianHandler, penjualanHandler, userHandler)
 
 	log.Println("Server running on port :" + cfg.Server)
@@ -57,9 +66,9 @@ func router(
 	api := app.Group("/api")
 	api.Use(middleware.JWTMiddleware(jwtSecret))
 
-	adminAccess := middleware.ACLMiddleware(map[string]bool{
-		"admin": true,
-	})
+	// adminAccess := middleware.ACLMiddleware(map[string]bool{
+	// 	"admin": true,
+	// })
 	adminAndStaffAccess := middleware.ACLMiddleware(map[string]bool{
 		"admin": true,
 		"staff": true,
@@ -69,7 +78,7 @@ func router(
 	barang.GET("", adminAndStaffAccess, barangHandler.GetAllBarang)
 	barang.POST("", adminAndStaffAccess, barangHandler.CreateBarang)
 	barang.GET("/:barangID", adminAndStaffAccess, barangHandler.GetBarang)
-	barang.DELETE("/:barangID", adminAccess, barangHandler.DeleteBarang)
+	barang.DELETE("/:barangID", adminAndStaffAccess, barangHandler.DeleteBarang)
 	barang.PUT("/:barangID", adminAndStaffAccess, barangHandler.UpdateBarang)
 	barang.GET("/stok", adminAndStaffAccess, barangHandler.GetAllBarangWithStok)
 

@@ -16,6 +16,7 @@ type StokRepo interface {
 	GetHistoryStokByBarangID(ctx context.Context, barangID int) ([]models.HistoryStok, error)
 	CreateHistoryStok(tx *gorm.DB, data models.HistoryStok) (*models.HistoryStok, error)
 	LockStok(tx *gorm.DB, barangID int) (*models.Mstok, error)
+	DeleteStok(tx *gorm.DB, barangID int) error
 }
 
 type StokService struct {

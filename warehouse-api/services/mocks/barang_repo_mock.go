@@ -52,17 +52,17 @@ func (mr *MockBarangRepoMockRecorder) CreateBarang(tx, data interface{}) *gomock
 }
 
 // DeleteBarang mocks base method.
-func (m *MockBarangRepo) DeleteBarang(ctx context.Context, id int) error {
+func (m *MockBarangRepo) DeleteBarang(tx *gorm.DB, id int) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteBarang", ctx, id)
+	ret := m.ctrl.Call(m, "DeleteBarang", tx, id)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteBarang indicates an expected call of DeleteBarang.
-func (mr *MockBarangRepoMockRecorder) DeleteBarang(ctx, id interface{}) *gomock.Call {
+func (mr *MockBarangRepoMockRecorder) DeleteBarang(tx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteBarang", reflect.TypeOf((*MockBarangRepo)(nil).DeleteBarang), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteBarang", reflect.TypeOf((*MockBarangRepo)(nil).DeleteBarang), tx, id)
 }
 
 // GetAllBarang mocks base method.

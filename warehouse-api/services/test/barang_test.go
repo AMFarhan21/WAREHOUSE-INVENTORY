@@ -165,18 +165,26 @@ func TestDeleteBarang(t *testing.T) {
 	mockBarangRepo := mock_services.NewMockBarangRepo(ctrl)
 	mockStokRepo := mock_services.NewMockStokRepo(ctrl)
 
-	db := testDB(t)
+	db := testDB(t) // Pastikan ini menghasilkan *gorm.DB
 
 	service := services.NewBarangService(db, mockBarangRepo, mockStokRepo)
 
+	// 1. Persiapkan Mock untuk Hapus Stok (Harus dipanggil pertama)
+	stokCall := mockStokRepo.
+		EXPECT().
+		DeleteStok(gomock.Any(), 1). // Pastikan argumen sesuai (tx, id)
+		Return(nil)
+
+	// 2. Persiapkan Mock untuk Hapus Barang (Hanya dipanggil setelah stok dihapus)
 	mockBarangRepo.
 		EXPECT().
 		DeleteBarang(gomock.Any(), 1).
-		Return(nil)
+		Return(nil).
+		After(stokCall) // Menjamin urutan logika
 
 	err := service.DeleteBarang(context.Background(), 1)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("Gagal menghapus barang: %v", err)
 	}
 }
 
