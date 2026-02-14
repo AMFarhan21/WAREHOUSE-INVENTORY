@@ -154,6 +154,8 @@ Visit `http://localhost:3000` to see the application.
 Complete API documentation is available on Postman:
 
 **[View API Documentation](https://documenter.getpostman.com/view/45402659/2sBXcBo2uV)**
+https://documenter.getpostman.com/view/45402659/2sBXcBo2uV
+
 
 The documentation includes:
 - Authentication endpoints (register, login)
