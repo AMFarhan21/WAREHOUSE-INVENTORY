@@ -135,7 +135,7 @@ const Page = () => {
                                 </TableCell>
                                 <TableCell className="font-medium">{item.nama_barang}</TableCell>
                                 <TableCell className="font-medium">{item.kode_barang}</TableCell>
-                                <TableCell>{item.stok.stok_akhir}</TableCell>
+                                <TableCell>{item.stok?.stok_akhir ?? 0}</TableCell>
                                 <TableCell className="w-30"><Input name="qty" value={qtys[item.id] || 1} onChange={e => handleQtyChange(String(item.id), e.target.valueAsNumber)} type="number" min={1} required /></TableCell>
                             </TableRow>
                         ))}
