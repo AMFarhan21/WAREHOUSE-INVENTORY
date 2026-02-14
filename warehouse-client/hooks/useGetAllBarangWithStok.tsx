@@ -12,7 +12,7 @@ export interface BarangWithStok {
     harga_jual: number
     created_at: string
     updated_at: string
-    stok: Stok
+    stok: Stok | null
 }
 
 export interface Meta {
@@ -38,7 +38,7 @@ const useGetAllBarangWithStok = () => {
         const getAllBarangWithStok = async () => {
             try {
                 setLoading(true)
-                const res = await fetch(`${API_URL}/api/barang?search=${search}&page=${pageNum}&limit=${limitNum}`, {
+                const res = await fetch(`${API_URL}/api/barang/stok?search=${search}&page=${pageNum}&limit=${limitNum}`, {
                     headers: {
                         Authorization: `Bearer ${token}`
                     }
@@ -52,6 +52,8 @@ const useGetAllBarangWithStok = () => {
 
                 setBarangsWithStok(data.data)
                 setMeta(data.meta)
+                console.log("Raw API Response:", data) // Cek di console browser, bukan terminal VS Code
+                console.log("Cek Stok Item Pertama:", data.data[0]?.stok)
             } catch (error) {
 
                 console.log(error)
