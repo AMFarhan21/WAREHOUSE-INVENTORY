@@ -1,0 +1,741 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>services: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">warehouse/services/barang_service.go (77.3%)</option>
+				
+				<option value="file1">warehouse/services/pembelian_service.go (78.4%)</option>
+				
+				<option value="file2">warehouse/services/penjualan_service.go (81.8%)</option>
+				
+				<option value="file3">warehouse/services/stok_service.go (75.0%)</option>
+				
+				<option value="file4">warehouse/services/user_service.go (89.5%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package services
+
+import (
+        "context"
+        "fmt"
+        "warehouse/models"
+
+        "gorm.io/gorm"
+)
+
+type BarangRepo interface {
+        GetAllBarang(ctx context.Context, search string, offset, limit int) ([]models.MasterBarang, int64, error)
+        GetBarang(tx *gorm.DB, id int) (*models.MasterBarang, error)
+        CreateBarang(tx *gorm.DB, data models.MasterBarang) (*models.MasterBarang, error)
+        UpdateBarang(tx *gorm.DB, data models.MasterBarang) error
+        DeleteBarang(ctx context.Context, id int) error
+        GetAllBarangWithStok(ctx context.Context, offset, limit int) ([]models.MasterBarangWithStok, int64, error)
+}
+
+type BarangService struct {
+        DB         *gorm.DB
+        barangRepo BarangRepo
+        stokRepo   StokRepo
+}
+
+func NewBarangService(db *gorm.DB, barangrepo BarangRepo, stokRepo StokRepo) *BarangService <span class="cov8" title="1">{
+        return &amp;BarangService{
+                DB:         db,
+                barangRepo: barangrepo,
+                stokRepo:   stokRepo,
+        }
+}</span>
+
+func (s *BarangService) GetAllBarang(ctx context.Context, search string, page, limit int) ([]models.MasterBarang, int64, error) <span class="cov8" title="1">{
+        if page &lt; 1 </span><span class="cov0" title="0">{
+                page = 1
+        }</span>
+
+        <span class="cov8" title="1">if limit &lt; 1 </span><span class="cov0" title="0">{
+                limit = 5
+        }</span>
+
+        <span class="cov8" title="1">offset := (page - 1) * limit
+
+        return s.barangRepo.GetAllBarang(ctx, search, offset, limit)</span>
+}
+
+func (s *BarangService) CreateBarang(ctx context.Context, data models.MasterBarang) (*models.MasterBarang, error) <span class="cov8" title="1">{
+        var barangResponse *models.MasterBarang
+        err := s.DB.WithContext(ctx).Transaction(func(tx *gorm.DB) error </span><span class="cov8" title="1">{
+                barang, err := s.barangRepo.CreateBarang(tx, data)
+                if err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+
+                <span class="cov8" title="1">barang.KodeBarang = fmt.Sprintf("BRG%03d", barang.ID)
+                err = s.barangRepo.UpdateBarang(tx, *barang)
+                if err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+
+                <span class="cov8" title="1">stokData := models.Mstok{
+                        BarangID:  barang.ID,
+                        StokAkhir: 0,
+                }
+
+                _, err = s.stokRepo.CreateStok(tx, stokData)
+                if err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+
+                <span class="cov8" title="1">barangResponse = barang
+
+                return nil</span>
+        })
+        <span class="cov8" title="1">if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">return barangResponse, nil</span>
+}
+
+func (s *BarangService) GetBarang(ctx context.Context, id int) (*models.MasterBarang, error) <span class="cov8" title="1">{
+        var barang *models.MasterBarang
+        err := s.DB.WithContext(ctx).Transaction(func(tx *gorm.DB) error </span><span class="cov8" title="1">{
+                res, err := s.barangRepo.GetBarang(tx, id)
+                if err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+
+                <span class="cov8" title="1">barang = res
+
+                return nil</span>
+        })
+        <span class="cov8" title="1">if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">return barang, nil</span>
+}
+func (s *BarangService) UpdateBarang(ctx context.Context, data models.MasterBarang) error <span class="cov8" title="1">{
+        return s.DB.WithContext(ctx).Transaction(func(tx *gorm.DB) error </span><span class="cov8" title="1">{
+                return s.barangRepo.UpdateBarang(tx, data)
+        }</span>)
+}
+func (s *BarangService) DeleteBarang(ctx context.Context, id int) error <span class="cov8" title="1">{
+        return s.barangRepo.DeleteBarang(ctx, id)
+}</span>
+func (s *BarangService) GetAllBarangWithStok(ctx context.Context, page, limit int) ([]models.MasterBarangWithStok, int64, error) <span class="cov8" title="1">{
+        if page &lt; 1 </span><span class="cov0" title="0">{
+                page = 1
+        }</span>
+
+        <span class="cov8" title="1">if limit &lt; 1 </span><span class="cov0" title="0">{
+                limit = 5
+        }</span>
+
+        <span class="cov8" title="1">offset := (page - 1) * limit
+
+        return s.barangRepo.GetAllBarangWithStok(ctx, offset, limit)</span>
+}
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package services
+
+import (
+        "context"
+        "fmt"
+        "warehouse/models"
+
+        "gorm.io/gorm"
+)
+
+type PembelianRepo interface {
+        CreateBeliHeader(tx *gorm.DB, data models.BeliHeader) (*models.BeliHeader, error)
+        CreateBeliDetail(tx *gorm.DB, data models.BeliDetail) (*models.BeliDetail, error)
+        UpdateBeliHeader(tx *gorm.DB, data models.BeliHeader) error
+        UpdateBeliDetail(tx *gorm.DB, data models.BeliDetail) error
+        GetAllPembelian(ctx context.Context, offset, limit int) ([]models.BeliHeader, int64, error)
+        GetPembelian(ctx context.Context, beliID int) (*models.Pembelian, error)
+}
+
+type PembelianService struct {
+        DB            *gorm.DB
+        pembelianRepo PembelianRepo
+        barangRepo    BarangRepo
+        stokRepo      StokRepo
+        userRepo      UserRepo
+}
+
+func NewPembelianService(db *gorm.DB, pembelianRepo PembelianRepo, barangRepo BarangRepo, stokRepo StokRepo, userRepo UserRepo) *PembelianService <span class="cov8" title="1">{
+        return &amp;PembelianService{
+                DB:            db,
+                pembelianRepo: pembelianRepo,
+                barangRepo:    barangRepo,
+                stokRepo:      stokRepo,
+                userRepo:      userRepo,
+        }
+}</span>
+
+func (s *PembelianService) CreatePembelian(ctx context.Context, beliHeaderData models.BeliHeader, beliDetailDataArr []models.BeliDetail) (*models.Pembelian, error) <span class="cov8" title="1">{
+        var pembelian *models.Pembelian
+        err := s.DB.WithContext(ctx).Transaction(func(tx *gorm.DB) error </span><span class="cov8" title="1">{
+
+                beliHeader, err := s.pembelianRepo.CreateBeliHeader(tx, beliHeaderData)
+                if err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+
+                <span class="cov8" title="1">nomorFaktur := fmt.Sprintf("BLI%03d", beliHeader.ID)
+
+                var total float64
+                var beliDetailResponse []models.BeliDetailWithBarang
+                for _, detail := range beliDetailDataArr </span><span class="cov8" title="1">{
+                        barang, err := s.barangRepo.GetBarang(tx, detail.BarangID)
+                        if err != nil </span><span class="cov0" title="0">{
+                                return err
+                        }</span>
+
+                        <span class="cov8" title="1">beliDetailData := models.BeliDetail{
+                                BeliHeaderID: beliHeader.ID,
+                                BarangID:     detail.BarangID,
+                                Qty:          detail.Qty,
+                                Harga:        float64(barang.HargaBeli),
+                                Subtotal:     float64(detail.Qty) * float64(barang.HargaBeli),
+                        }
+                        beliDetail, err := s.pembelianRepo.CreateBeliDetail(tx, beliDetailData)
+                        if err != nil </span><span class="cov0" title="0">{
+                                return err
+                        }</span>
+
+                        <span class="cov8" title="1">beliDetailResponse = append(beliDetailResponse, models.BeliDetailWithBarang{
+                                ID:           beliDetail.ID,
+                                BeliHeaderID: beliDetail.BeliHeaderID,
+                                BarangID:     beliDetail.BarangID,
+                                Qty:          beliDetail.Qty,
+                                Harga:        beliDetail.Harga,
+                                Subtotal:     beliDetail.Subtotal,
+                                Barang: models.Barang{
+                                        ID:         barang.ID,
+                                        KodeBarang: barang.KodeBarang,
+                                        NamaBarang: barang.NamaBarang,
+                                        Satuan:     barang.Satuan,
+                                        HargaJual:  barang.HargaJual,
+                                },
+                        })
+
+                        stok, err := s.stokRepo.GetStokByBarangID(tx, barang.ID)
+                        if err != nil </span><span class="cov0" title="0">{
+                                return err
+                        }</span>
+
+                        <span class="cov8" title="1">addStok := stok.StokAkhir + detail.Qty
+                        err = s.stokRepo.UpdateStok(tx, barang.ID, addStok)
+                        if err != nil </span><span class="cov0" title="0">{
+                                return err
+                        }</span>
+
+                        <span class="cov8" title="1">historyStokData := models.HistoryStok{
+                                BarangID:       barang.ID,
+                                UserID:         beliHeaderData.UserID,
+                                JenisTransaksi: "masuk",
+                                Jumlah:         detail.Qty,
+                                StokSebelum:    stok.StokAkhir,
+                                StokSesudah:    addStok,
+                                Keterangan:     fmt.Sprintf("Pembelian %s", nomorFaktur),
+                        }
+                        _, err = s.stokRepo.CreateHistoryStok(tx, historyStokData)
+                        if err != nil </span><span class="cov0" title="0">{
+                                return err
+                        }</span>
+
+                        <span class="cov8" title="1">total += beliDetailData.Subtotal</span>
+                }
+
+                <span class="cov8" title="1">beliHeader.NoFaktur = nomorFaktur
+                beliHeader.Total = total
+                beliHeader.Status = "selesai"
+                err = s.pembelianRepo.UpdateBeliHeader(tx, *beliHeader)
+                if err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+
+                <span class="cov8" title="1">user, err := s.userRepo.FindUserByID(tx, beliHeader.UserID)
+                if err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+
+                <span class="cov8" title="1">pembelian = &amp;models.Pembelian{
+                        ID:        beliHeader.ID,
+                        NoFaktur:  beliHeader.NoFaktur,
+                        Supplier:  beliHeader.Supplier,
+                        Total:     beliHeader.Total,
+                        UserID:    beliHeader.UserID,
+                        Status:    beliHeader.Status,
+                        CreatedAt: beliHeader.CreatedAt,
+                        User: models.User{
+                                ID:       user.ID,
+                                Username: user.Username,
+                                FullName: user.FullName,
+                        },
+                        BeliDetail: beliDetailResponse,
+                }
+
+                return nil</span>
+        })
+        <span class="cov8" title="1">if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">return pembelian, nil</span>
+}
+
+func (s *PembelianService) GetAllPembelian(ctx context.Context, page, limit int) ([]models.BeliHeader, int64, error) <span class="cov8" title="1">{
+        if page &lt; 1 </span><span class="cov0" title="0">{
+                page = 1
+        }</span>
+
+        <span class="cov8" title="1">if limit &lt; 1 </span><span class="cov0" title="0">{
+                limit = 5
+        }</span>
+        <span class="cov8" title="1">offset := (page - 1) * limit
+        return s.pembelianRepo.GetAllPembelian(ctx, offset, limit)</span>
+}
+
+func (s *PembelianService) GetPembelian(ctx context.Context, beliID int) (*models.Pembelian, error) <span class="cov8" title="1">{
+        return s.pembelianRepo.GetPembelian(ctx, beliID)
+}</span>
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">package services
+
+import (
+        "context"
+        "errors"
+        "fmt"
+        "warehouse/models"
+
+        "gorm.io/gorm"
+)
+
+type PenjualanRepo interface {
+        CreateJualHeader(tx *gorm.DB, data models.JualHeader) (*models.JualHeader, error)
+        CreateJualDetail(tx *gorm.DB, data models.JualDetail) (*models.JualDetail, error)
+        UpdateJualHeader(tx *gorm.DB, data models.JualHeader) error
+        UpdateJualDetail(tx *gorm.DB, data models.JualDetail) error
+        GetAllPenjualan(ctx context.Context, offset, limit int) ([]models.JualHeader, int64, error)
+        GetPenjualan(ctx context.Context, jualID int) (*models.Penjualan, error)
+}
+
+type PenjualanService struct {
+        DB            *gorm.DB
+        penjualanRepo PenjualanRepo
+        stokRepo      StokRepo
+        barangRepo    BarangRepo
+        userRepo      UserRepo
+}
+
+func NewPenjualanService(db *gorm.DB, penjualanRepo PenjualanRepo, stokRepo StokRepo, barangRepo BarangRepo, userRepo UserRepo) *PenjualanService <span class="cov8" title="1">{
+        return &amp;PenjualanService{
+                DB:            db,
+                penjualanRepo: penjualanRepo,
+                stokRepo:      stokRepo,
+                barangRepo:    barangRepo,
+                userRepo:      userRepo,
+        }
+}</span>
+
+func (s *PenjualanService) CreatePenjualan(ctx context.Context, dataJualHeader models.JualHeader, dataJualDetail []models.JualDetail) (*models.Penjualan, error) <span class="cov8" title="1">{
+        var penjualan *models.Penjualan
+
+        err := s.DB.WithContext(ctx).Transaction(func(tx *gorm.DB) error </span><span class="cov8" title="1">{
+                jualHeader, err := s.penjualanRepo.CreateJualHeader(tx, dataJualHeader)
+                if err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+
+                <span class="cov8" title="1">nomorFaktur := fmt.Sprintf("JUAL%03d", jualHeader.ID)
+
+                var jualDetailResponse []models.JualDetailWithBarang
+                var total float64
+                for _, item := range dataJualDetail </span><span class="cov8" title="1">{
+                        barang, err := s.barangRepo.GetBarang(tx, item.BarangID)
+                        if err != nil </span><span class="cov0" title="0">{
+                                return err
+                        }</span>
+
+                        <span class="cov8" title="1">mstok, err := s.stokRepo.LockStok(tx, item.BarangID)
+                        if err != nil </span><span class="cov0" title="0">{
+                                return err
+                        }</span>
+
+                        <span class="cov8" title="1">if mstok.StokAkhir &lt; item.Qty </span><span class="cov8" title="1">{
+                                return errors.New("Insufficient stock")
+                        }</span>
+
+                        <span class="cov8" title="1">jualDetailData := models.JualDetail{
+                                JualHeaderID: jualHeader.ID,
+                                BarangID:     item.BarangID,
+                                Qty:          item.Qty,
+                                Harga:        barang.HargaJual,
+                                Subtotal:     float64(item.Qty) * barang.HargaJual,
+                        }
+
+                        stokSebelum := mstok.StokAkhir
+                        stokSesudah := stokSebelum - item.Qty
+                        // err = s.stokRepo.UpdateStok(tx, item.BarangID, substractStok)
+                        // if err != nil {
+                        //         return err
+                        // }
+                        mstok.StokAkhir = stokSesudah
+                        err = tx.Save(mstok).Error
+                        if err != nil </span><span class="cov0" title="0">{
+                                return err
+                        }</span>
+
+                        <span class="cov8" title="1">jualDetail, err := s.penjualanRepo.CreateJualDetail(tx, jualDetailData)
+                        if err != nil </span><span class="cov0" title="0">{
+                                return err
+                        }</span>
+
+                        <span class="cov8" title="1">jualDetailResponse = append(jualDetailResponse, models.JualDetailWithBarang{
+                                ID:           jualDetail.ID,
+                                JualHeaderID: jualDetail.JualHeaderID,
+                                BarangID:     jualDetail.BarangID,
+                                Qty:          jualDetail.Qty,
+                                Harga:        jualDetail.Harga,
+                                Subtotal:     jualDetail.Subtotal,
+                                Barang: models.Barang{
+                                        ID:         barang.ID,
+                                        KodeBarang: barang.KodeBarang,
+                                        NamaBarang: barang.NamaBarang,
+                                        Satuan:     barang.Satuan,
+                                        HargaJual:  barang.HargaJual,
+                                },
+                        })
+
+                        historyStokData := models.HistoryStok{
+                                BarangID:       item.BarangID,
+                                UserID:         dataJualHeader.UserID,
+                                JenisTransaksi: "keluar",
+                                Jumlah:         item.Qty,
+                                StokSebelum:    stokSebelum,
+                                StokSesudah:    stokSesudah,
+                                Keterangan:     fmt.Sprintf("Penjualan %s", nomorFaktur),
+                        }
+
+                        _, err = s.stokRepo.CreateHistoryStok(tx, historyStokData)
+                        if err != nil </span><span class="cov0" title="0">{
+                                return err
+                        }</span>
+
+                        <span class="cov8" title="1">total += jualDetailData.Subtotal</span>
+                }
+
+                <span class="cov8" title="1">jualHeader.NoFaktur = nomorFaktur
+                jualHeader.Total = total
+                jualHeader.Status = "selesai"
+                err = s.penjualanRepo.UpdateJualHeader(tx, *jualHeader)
+                if err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+
+                <span class="cov8" title="1">user, err := s.userRepo.FindUserByID(tx, jualHeader.UserID)
+                if err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+
+                <span class="cov8" title="1">penjualan = &amp;models.Penjualan{
+                        ID:        jualHeader.ID,
+                        NoFaktur:  nomorFaktur,
+                        Customer:  jualHeader.Customer,
+                        Total:     total,
+                        UserID:    jualHeader.UserID,
+                        Status:    jualHeader.Status,
+                        CreatedAt: jualHeader.CreatedAt,
+                        User: models.User{
+                                ID:       user.ID,
+                                Username: user.Username,
+                                FullName: user.FullName,
+                        },
+                        JualDetail: jualDetailResponse,
+                }
+
+                return nil</span>
+        })
+        <span class="cov8" title="1">if err != nil </span><span class="cov8" title="1">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">return penjualan, nil</span>
+}
+
+func (s *PenjualanService) GetAllPenjualan(ctx context.Context, page, limit int) ([]models.JualHeader, int64, error) <span class="cov8" title="1">{
+        if page &lt; 1 </span><span class="cov0" title="0">{
+                page = 1
+        }</span>
+
+        <span class="cov8" title="1">if limit &lt; 1 </span><span class="cov0" title="0">{
+                limit = 5
+        }</span>
+
+        <span class="cov8" title="1">offset := (page - 1) * limit
+
+        return s.penjualanRepo.GetAllPenjualan(ctx, offset, limit)</span>
+}
+
+func (s *PenjualanService) GetPenjualan(ctx context.Context, jualID int) (*models.Penjualan, error) <span class="cov8" title="1">{
+        return s.penjualanRepo.GetPenjualan(ctx, jualID)
+}</span>
+</pre>
+		
+		<pre class="file" id="file3" style="display: none">package services
+
+import (
+        "context"
+        "warehouse/models"
+
+        "gorm.io/gorm"
+)
+
+type StokRepo interface {
+        CreateStok(tx *gorm.DB, data models.Mstok) (*models.Mstok, error)
+        GetAllStok(ctx context.Context, offset, limit int) ([]models.Mstok, int64, error)
+        GetStokByBarangID(tx *gorm.DB, barangID int) (*models.Mstok, error)
+        UpdateStok(tx *gorm.DB, barangID, stok int) error
+        GetHistoryStok(ctx context.Context, offset, limit int) ([]models.HistoryStok, int64, error)
+        GetHistoryStokByBarangID(ctx context.Context, barangID int) ([]models.HistoryStok, error)
+        CreateHistoryStok(tx *gorm.DB, data models.HistoryStok) (*models.HistoryStok, error)
+        LockStok(tx *gorm.DB, barangID int) (*models.Mstok, error)
+}
+
+type StokService struct {
+        DB       *gorm.DB
+        stokRepo StokRepo
+}
+
+func NewStokService(db *gorm.DB, stokRepo StokRepo) *StokService <span class="cov8" title="1">{
+        return &amp;StokService{
+                DB:       db,
+                stokRepo: stokRepo,
+        }
+}</span>
+
+func (s *StokService) GetAllStok(ctx context.Context, page, limit int) ([]models.Mstok, int64, error) <span class="cov8" title="1">{
+        if page &lt; 1 </span><span class="cov0" title="0">{
+                page = 1
+        }</span>
+
+        <span class="cov8" title="1">if limit &lt; 1 </span><span class="cov0" title="0">{
+                limit = 5
+        }</span>
+
+        <span class="cov8" title="1">offset := (page - 1) * limit
+
+        return s.stokRepo.GetAllStok(ctx, offset, limit)</span>
+}
+
+func (s *StokService) GetStokByBarangID(ctx context.Context, barangID int) (*models.Mstok, error) <span class="cov8" title="1">{
+        var mstok *models.Mstok
+        err := s.DB.WithContext(ctx).Transaction(func(tx *gorm.DB) error </span><span class="cov8" title="1">{
+                stok, err := s.stokRepo.GetStokByBarangID(tx, barangID)
+                if err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+
+                <span class="cov8" title="1">mstok = stok
+
+                return nil</span>
+        })
+
+        <span class="cov8" title="1">if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">return mstok, nil</span>
+}
+
+func (s *StokService) GetHistoryStok(ctx context.Context, page, limit int) ([]models.HistoryStok, int64, error) <span class="cov8" title="1">{
+        if page &lt; 1 </span><span class="cov0" title="0">{
+                page = 1
+        }</span>
+
+        <span class="cov8" title="1">if limit &lt; 1 </span><span class="cov0" title="0">{
+                limit = 5
+        }</span>
+
+        <span class="cov8" title="1">offset := (page - 1) * limit
+        return s.stokRepo.GetHistoryStok(ctx, offset, limit)</span>
+}
+func (s *StokService) GetHistoryStokByBarangID(ctx context.Context, barangID int) ([]models.HistoryStok, error) <span class="cov8" title="1">{
+        return s.stokRepo.GetHistoryStokByBarangID(ctx, barangID)
+}</span>
+</pre>
+		
+		<pre class="file" id="file4" style="display: none">package services
+
+import (
+        "context"
+        "time"
+        "warehouse/models"
+
+        "github.com/golang-jwt/jwt/v5"
+        "golang.org/x/crypto/bcrypt"
+        "gorm.io/gorm"
+)
+
+type UserRepo interface {
+        CreateUser(ctx context.Context, data models.Users) (*models.Users, error)
+        FindUserByEmail(ctx context.Context, email string) (*models.Users, error)
+        FindUserByID(tx *gorm.DB, userID int) (*models.Users, error)
+}
+
+type UserService struct {
+        userRepo  UserRepo
+        jwtSecret string
+}
+
+func NewUserService(userRepo UserRepo, jwtSecret string) *UserService <span class="cov8" title="1">{
+        return &amp;UserService{
+                userRepo:  userRepo,
+                jwtSecret: jwtSecret,
+        }
+}</span>
+
+func (s *UserService) Register(ctx context.Context, data models.Users) (*models.Users, error) <span class="cov8" title="1">{
+        hashedPassword, err := bcrypt.GenerateFromPassword([]byte(data.Password), bcrypt.DefaultCost)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">data.Password = string(hashedPassword)
+        data.Role = "staff"
+
+        return s.userRepo.CreateUser(ctx, data)</span>
+}
+
+func (s *UserService) Login(ctx context.Context, email, password string) (*string, error) <span class="cov8" title="1">{
+        user, err := s.userRepo.FindUserByEmail(ctx, email)
+        if err != nil </span><span class="cov8" title="1">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+        if err != nil </span><span class="cov8" title="1">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">type MapClaims struct {
+                UserID int    `json:"user_id"`
+                Role   string `json:"role"`
+                *jwt.RegisteredClaims
+        }
+
+        token := jwt.NewWithClaims(jwt.SigningMethodHS256, MapClaims{
+                UserID: user.ID,
+                Role:   user.Role,
+                RegisteredClaims: &amp;jwt.RegisteredClaims{
+                        IssuedAt:  jwt.NewNumericDate(time.Now()),
+                        ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24)),
+                },
+        })
+
+        signedString, err := token.SignedString([]byte(s.jwtSecret))
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">return &amp;signedString, nil</span>
+}
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>
