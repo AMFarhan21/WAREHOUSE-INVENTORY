@@ -92,13 +92,15 @@ func router(
 
 	pembelian := api.Group("/pembelian")
 	pembelian.POST("", adminAndStaffAccess, pembelianHandler.CreatePembelian)
-	pembelian.GET("", adminAndStaffAccess, pembelianHandler.GetAllPembelian)
+	// pembelian.GET("", adminAndStaffAccess, pembelianHandler.GetAllPembelian)
 	pembelian.GET("/:beliID", adminAndStaffAccess, pembelianHandler.GetPembelian)
+	pembelian.GET("", adminAndStaffAccess, pembelianHandler.GetPembelianByDate)
 
 	penjualan := api.Group("/penjualan")
 	penjualan.POST("", adminAndStaffAccess, penjualanHandler.CreatePenjualan)
-	penjualan.GET("", adminAndStaffAccess, penjualanHandler.GetAllPenjualan)
+	// penjualan.GET("", adminAndStaffAccess, penjualanHandler.GetAllPenjualan)
 	penjualan.GET("/:jualID", adminAndStaffAccess, penjualanHandler.GetPenjualan)
+	penjualan.GET("", adminAndStaffAccess, penjualanHandler.GetPenjualanByDate)
 
 	user := app.Group("/user")
 	user.POST("/register", userHandler.RegisterUser)

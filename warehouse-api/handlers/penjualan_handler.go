@@ -19,6 +19,7 @@ type PenjualanService interface {
 	CreatePenjualan(ctx context.Context, dataJualHeader models.JualHeader, dataJualDetail []models.JualDetail) (*models.Penjualan, error)
 	GetAllPenjualan(ctx context.Context, page, limit int) ([]models.JualHeader, int64, error)
 	GetPenjualan(ctx context.Context, jualID int) (*models.Penjualan, error)
+	GetPenjualanByDate(ctx context.Context, startDate, endDate string, page, limit int) ([]models.Penjualan, int64, error)
 }
 
 type PenjualanHandler struct {
@@ -221,4 +222,34 @@ func (h *PenjualanHandler) GetPenjualan(g *gin.Context) {
 		},
 	})
 
+}
+
+func (h *PenjualanHandler) GetPenjualanByDate(g *gin.Context) {
+	page, _ := strconv.Atoi(g.DefaultQuery("page", "1"))
+	limit, _ := strconv.Atoi(g.DefaultQuery("limit", "5"))
+
+	startDate := g.Query("start_date")
+	endDate := g.Query("end_date")
+
+	penjualan, total, err := h.penjualanService.GetPenjualanByDate(g.Request.Context(), startDate, endDate, page, limit)
+	if err != nil {
+		g.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Success:   false,
+			Message:   "Server Error",
+			ErrorCode: response.InternalError,
+		})
+		log.Printf("Error on GetPenjualanByDate internal server: %v", err.Error())
+		return
+	}
+
+	g.JSON(http.StatusOK, response.SuccessResponse{
+		Success: true,
+		Message: "Data retrieved successfully",
+		Data:    penjualan,
+		Meta: &response.Meta{
+			Page:  page,
+			Limit: limit,
+			Total: total,
+		},
+	})
 }

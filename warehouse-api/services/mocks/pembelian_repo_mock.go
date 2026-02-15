@@ -97,6 +97,22 @@ func (mr *MockPembelianRepoMockRecorder) GetPembelian(ctx, beliID interface{}) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPembelian", reflect.TypeOf((*MockPembelianRepo)(nil).GetPembelian), ctx, beliID)
 }
 
+// GetPembelianByDate mocks base method.
+func (m *MockPembelianRepo) GetPembelianByDate(ctx context.Context, startDate, endDate string, offset, limit int) ([]models.Pembelian, int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPembelianByDate", ctx, startDate, endDate, offset, limit)
+	ret0, _ := ret[0].([]models.Pembelian)
+	ret1, _ := ret[1].(int64)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// GetPembelianByDate indicates an expected call of GetPembelianByDate.
+func (mr *MockPembelianRepoMockRecorder) GetPembelianByDate(ctx, startDate, endDate, offset, limit interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPembelianByDate", reflect.TypeOf((*MockPembelianRepo)(nil).GetPembelianByDate), ctx, startDate, endDate, offset, limit)
+}
+
 // UpdateBeliDetail mocks base method.
 func (m *MockPembelianRepo) UpdateBeliDetail(tx *gorm.DB, data models.BeliDetail) error {
 	m.ctrl.T.Helper()

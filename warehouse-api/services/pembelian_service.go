@@ -15,6 +15,7 @@ type PembelianRepo interface {
 	UpdateBeliDetail(tx *gorm.DB, data models.BeliDetail) error
 	GetAllPembelian(ctx context.Context, offset, limit int) ([]models.BeliHeader, int64, error)
 	GetPembelian(ctx context.Context, beliID int) (*models.Pembelian, error)
+	GetPembelianByDate(ctx context.Context, startDate, endDate string, offset, limit int) ([]models.Pembelian, int64, error)
 }
 
 type PembelianService struct {
@@ -162,4 +163,18 @@ func (s *PembelianService) GetAllPembelian(ctx context.Context, page, limit int)
 
 func (s *PembelianService) GetPembelian(ctx context.Context, beliID int) (*models.Pembelian, error) {
 	return s.pembelianRepo.GetPembelian(ctx, beliID)
+}
+
+func (s *PembelianService) GetPembelianByDate(ctx context.Context, startDate, endDate string, page, limit int) ([]models.Pembelian, int64, error) {
+	if page < 1 {
+		page = 1
+	}
+
+	if limit < 1 {
+		limit = 1
+	}
+
+	offset := (page - 1) * limit
+
+	return s.pembelianRepo.GetPembelianByDate(ctx, startDate, endDate, offset, limit)
 }

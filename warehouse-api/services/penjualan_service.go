@@ -16,6 +16,7 @@ type PenjualanRepo interface {
 	UpdateJualDetail(tx *gorm.DB, data models.JualDetail) error
 	GetAllPenjualan(ctx context.Context, offset, limit int) ([]models.JualHeader, int64, error)
 	GetPenjualan(ctx context.Context, jualID int) (*models.Penjualan, error)
+	GetPenjualanByDate(ctx context.Context, startDate, endDate string, offset, limit int) ([]models.Penjualan, int64, error)
 }
 
 type PenjualanService struct {
@@ -177,4 +178,18 @@ func (s *PenjualanService) GetAllPenjualan(ctx context.Context, page, limit int)
 
 func (s *PenjualanService) GetPenjualan(ctx context.Context, jualID int) (*models.Penjualan, error) {
 	return s.penjualanRepo.GetPenjualan(ctx, jualID)
+}
+
+func (s *PenjualanService) GetPenjualanByDate(ctx context.Context, startDate, endDate string, page, limit int) ([]models.Penjualan, int64, error) {
+	if page < 1 {
+		page = 1
+	}
+
+	if limit < 1 {
+		limit = 1
+	}
+
+	offset := (page - 1) * limit
+
+	return s.penjualanRepo.GetPenjualanByDate(ctx, startDate, endDate, offset, limit)
 }

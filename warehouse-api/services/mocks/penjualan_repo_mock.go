@@ -97,6 +97,22 @@ func (mr *MockPenjualanRepoMockRecorder) GetPenjualan(ctx, jualID interface{}) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPenjualan", reflect.TypeOf((*MockPenjualanRepo)(nil).GetPenjualan), ctx, jualID)
 }
 
+// GetPenjualanByDate mocks base method.
+func (m *MockPenjualanRepo) GetPenjualanByDate(ctx context.Context, startDate, endDate string, offset, limit int) ([]models.Penjualan, int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPenjualanByDate", ctx, startDate, endDate, offset, limit)
+	ret0, _ := ret[0].([]models.Penjualan)
+	ret1, _ := ret[1].(int64)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// GetPenjualanByDate indicates an expected call of GetPenjualanByDate.
+func (mr *MockPenjualanRepoMockRecorder) GetPenjualanByDate(ctx, startDate, endDate, offset, limit interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPenjualanByDate", reflect.TypeOf((*MockPenjualanRepo)(nil).GetPenjualanByDate), ctx, startDate, endDate, offset, limit)
+}
+
 // UpdateJualDetail mocks base method.
 func (m *MockPenjualanRepo) UpdateJualDetail(tx *gorm.DB, data models.JualDetail) error {
 	m.ctrl.T.Helper()

@@ -89,3 +89,29 @@ func (r *PembelianRepo) GetPembelian(ctx context.Context, beliID int) (*models.P
 
 	return pembelian, nil
 }
+
+func (r *PembelianRepo) GetPembelianByDate(ctx context.Context, startDate, endDate string, offset, limit int) ([]models.Pembelian, int64, error) {
+	var pembelian []models.Pembelian
+	var total int64
+
+	db := r.DB.Model(&models.BeliHeader{}).Preload("User").Preload("BeliDetail").Preload("BeliDetail.Barang").WithContext(ctx)
+
+	if startDate != "" && endDate != "" {
+		fullStart := startDate + " 00:00:00"
+		fullEnd := endDate + " 23:59:59"
+
+		db = db.Where("created_at >= ? AND created_at <= ?", fullStart, fullEnd)
+	}
+
+	err := db.Count(&total).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
+	err = db.Offset(offset).Limit(limit).Order("created_at DESC").Find(&pembelian).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return pembelian, total, nil
+}

@@ -19,6 +19,7 @@ type PembelianService interface {
 	CreatePembelian(ctx context.Context, beliHeaderData models.BeliHeader, beliDetailDataArr []models.BeliDetail) (*models.Pembelian, error)
 	GetAllPembelian(ctx context.Context, page, limit int) ([]models.BeliHeader, int64, error)
 	GetPembelian(ctx context.Context, beliID int) (*models.Pembelian, error)
+	GetPembelianByDate(ctx context.Context, startDate, endDate string, page, limit int) ([]models.Pembelian, int64, error)
 }
 
 type PembelianHandler struct {
@@ -215,4 +216,34 @@ func (h *PembelianHandler) GetPembelian(g *gin.Context) {
 		},
 	})
 
+}
+
+func (h *PembelianHandler) GetPembelianByDate(g *gin.Context) {
+	page, _ := strconv.Atoi(g.DefaultQuery("page", "1"))
+	limit, _ := strconv.Atoi(g.DefaultQuery("limit", "5"))
+
+	startDate := g.Query("start_date")
+	endDate := g.Query("end_date")
+
+	pembelian, total, err := h.pembelianService.GetPembelianByDate(g.Request.Context(), startDate, endDate, page, limit)
+	if err != nil {
+		g.JSON(http.StatusInternalServerError, response.ErrorResponse{
+			Success:   false,
+			Message:   "Server Error",
+			ErrorCode: response.InternalError,
+		})
+		log.Printf("Error on GetPembelianByDate internal server: %v", err.Error())
+		return
+	}
+
+	g.JSON(http.StatusOK, response.SuccessResponse{
+		Success: true,
+		Message: "Data retrieved successfully",
+		Data:    pembelian,
+		Meta: &response.Meta{
+			Page:  page,
+			Limit: limit,
+			Total: total,
+		},
+	})
 }

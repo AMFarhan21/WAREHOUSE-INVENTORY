@@ -92,3 +92,29 @@ func (r *PenjualanRepo) GetPenjualan(ctx context.Context, jualID int) (*models.P
 
 	return &penjualan, nil
 }
+
+func (r *PenjualanRepo) GetPenjualanByDate(ctx context.Context, startDate, endDate string, offset, limit int) ([]models.Penjualan, int64, error) {
+	var penjualan []models.Penjualan
+	var total int64
+
+	db := r.DB.Model(&models.JualHeader{}).Preload("User").Preload("JualDetail").Preload("JualDetail.Barang").WithContext(ctx)
+
+	if startDate != "" && endDate != "" {
+		fullStart := startDate + " 00:00:00"
+		fullEnd := endDate + " 23:59:59"
+
+		db = db.Where("created_at >= ? AND created_at <= ?", fullStart, fullEnd)
+	}
+
+	err := db.Count(&total).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
+	err = db.Offset(offset).Limit(limit).Order("created_at DESC").Find(&penjualan).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return penjualan, total, nil
+}
