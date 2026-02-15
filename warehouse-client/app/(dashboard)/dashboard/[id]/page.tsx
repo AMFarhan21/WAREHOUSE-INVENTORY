@@ -109,10 +109,13 @@ const Page = () => {
                         <TableRow>
                             <TableHead>Nama Barang</TableHead>
                             <TableHead>Kode Barang</TableHead>
+                            <TableHead>Jumlah</TableHead>
                             <TableHead>Unit</TableHead>
                             <TableHead className="w-[100px]">Keterangan</TableHead>
-                            <TableHead>Nama Staff</TableHead>
-                            <TableHead className="text-right">Harga Jual</TableHead>
+                            <TableHead>Stok Sebelum</TableHead>
+                            <TableHead>Stok Sesudah</TableHead>
+                            <TableHead>Jenis Transaksi</TableHead>
+                            <TableHead className="text-right">Nama Staff</TableHead>
                             <TableHead className="text-right">Updated At</TableHead>
                         </TableRow>
                     </TableHeader>
@@ -121,10 +124,13 @@ const Page = () => {
                             <TableRow key={historyStok.id}>
                                 <TableCell className="font-medium">{historyStok.barang.nama_barang}</TableCell>
                                 <TableCell>{historyStok.barang.kode_barang}</TableCell>
+                                <TableCell>{historyStok.jumlah}</TableCell>
                                 <TableCell>{historyStok.barang.satuan}</TableCell>
+                                <TableCell>{historyStok.jenis_transaksi}</TableCell>
+                                <TableCell>{historyStok.stok_sebelum}</TableCell>
+                                <TableCell>{historyStok.stok_sesudah}</TableCell>
                                 <TableCell>{historyStok.keterangan}</TableCell>
-                                <TableCell>{historyStok.user.full_name}</TableCell>
-                                <TableCell className="text-right">Rp. {historyStok.barang.harga_jual}</TableCell>
+                                <TableCell className="text-right">{historyStok.user.full_name}</TableCell>
                                 <TableCell className="text-right space-x-4">{historyStok.created_at.split("T")[0] + " | " + historyStok.created_at.split("T")[1].slice(0, 8)}</TableCell>
                             </TableRow>
                         ))}
