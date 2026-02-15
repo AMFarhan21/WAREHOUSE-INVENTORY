@@ -1,5 +1,5 @@
 'use client'
-import useGetAllBarang from '@/hooks/useGetAllBarang'
+import useGetAllBarang, { MasterBarang } from '@/hooks/useGetAllBarang'
 import {
     Table,
     TableBody,
@@ -58,6 +58,8 @@ import {
 } from "@/components/ui/alert-dialog"
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import useUpdateBarang from '@/hooks/useUpdateBarang'
+import { Barang } from '@/hooks/useGetAllHistoryStok'
 
 const items = [
     { label: "Pilih satuan", value: null },
@@ -71,6 +73,8 @@ const Page = () => {
     const totalPage = Math.ceil((meta?.total || 0) / limitNum)
 
     const { createBarang, error, loading, setError } = useCreateBarang()
+    const { updateBarang } = useUpdateBarang()
+    const [barangID, setBarangID] = useState(0)
     const [namaBarang, setNamaBarang] = useState("")
     const [deskripsi, setDeskripsi] = useState("")
     const [satuan, setSatuan] = useState("")
@@ -93,8 +97,38 @@ const Page = () => {
         const data = await createBarang(namaBarang, deskripsi, satuan, hargaBeli, hargaJual)
         toast.success("Successfully create barang")
         setBarangs(prev => [data, ...prev])
+    }
 
-        console.log("Tombol diklik!");
+    const handleUpdateBarangSubmit = async (e: React.SubmitEvent) => {
+        e.preventDefault()
+
+        if (!satuan || satuan == "") {
+            setError("Satuan tidak boleh kosong")
+            toast.error("Satuan tidak boleh kosong")
+            return
+        }
+
+        await updateBarang(barangID, namaBarang, deskripsi, satuan, hargaBeli, hargaJual)
+        toast.success("Successfully update barang")
+
+        setBarangs(prev => prev.map(item => item.id == barangID ? {
+            ...item,
+            nama_barang: namaBarang,
+            deskripsi,
+            satuan,
+            harga_beli: hargaBeli,
+            harga_jual: hargaJual,
+        } : item))
+
+    }
+
+    const handleEditClick = (barang: MasterBarang) => {
+        setBarangID(barang.id)
+        setNamaBarang(barang.nama_barang)
+        setDeskripsi(barang.deskripsi)
+        setSatuan(barang.satuan)
+        setHargaBeli(barang.harga_beli)
+        setHargaJual(barang.harga_jual)
     }
 
     return (
@@ -116,7 +150,7 @@ const Page = () => {
                     <DialogContent className="sm:max-w-sm">
                         <form onSubmit={handleSubmit} className=''>
                             <DialogHeader>
-                                <DialogTitle>Buat Barang</DialogTitle>
+                                <DialogTitle>Create Barang</DialogTitle>
                                 <DialogDescription>
                                     Masukkan detail barang di kolom berikut
                                 </DialogDescription>
@@ -186,9 +220,74 @@ const Page = () => {
                                 <TableCell className="text-right">Rp. {barang.harga_beli}</TableCell>
                                 <TableCell className="text-right">Rp. {barang.harga_jual}</TableCell>
                                 <TableCell className="text-right space-x-4">
-                                    <Button className='bg-gray-200' onClick={async (e) => {
+                                    {/* <Button className='bg-gray-200' onClick={async (e) => {
                                         e.stopPropagation()
-                                    }}> <Edit className='text-blue-500' /> </Button>
+                                    }}> <Edit className='text-blue-500' /> </Button> */}
+                                    <Dialog>
+                                        <DialogTrigger
+                                            onClick={async (e) => {
+                                                e.stopPropagation()
+                                                handleEditClick(barang)
+                                            }}
+                                            className='cursor-pointer bg-white mt-4 hover:bg-white/40 font-semibold py-1 px-1 rounded-lg text-sm shadow-sm shadow-gray-300'>
+                                            <Edit className='text-blue-500' />
+                                        </DialogTrigger>
+
+                                        <DialogContent className="sm:max-w-sm" onClick={e => e.stopPropagation()}>
+                                            <form onSubmit={(e) => {
+                                                handleUpdateBarangSubmit(e)
+                                            }} className=''>
+                                                <DialogHeader>
+                                                    <DialogTitle>Update Barang</DialogTitle>
+                                                    <DialogDescription>
+                                                        Masukkan detail barang di kolom berikut
+                                                    </DialogDescription>
+                                                </DialogHeader>
+                                                <FieldGroup className='gap-2 mt-3'>
+                                                    <Field>
+                                                        <Label htmlFor="nama_barang">Nama Barang</Label>
+                                                        <Input id="nama_barang" name="nama_barang" value={namaBarang} onChange={e => setNamaBarang(e.target.value)} required />
+                                                    </Field>
+                                                    <Field>
+                                                        <Label htmlFor="deskripsi">Deskripsi</Label>
+                                                        <Textarea id="deskripsi" name="deskripsi" value={deskripsi} onChange={e => setDeskripsi(e.target.value)} />
+                                                    </Field>
+                                                    <Field>
+                                                        <Label htmlFor="deskripsi">Satuan</Label>
+                                                        <Select value={satuan} onValueChange={(value) => setSatuan(value)} required>
+                                                            <SelectTrigger className="w-full">
+                                                                <SelectValue placeholder="Pilih Satuan" />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                <SelectGroup>
+                                                                    <SelectLabel>Fruits</SelectLabel>
+                                                                    {items.map((item) => (
+                                                                        <SelectItem key={item.value} value={item.value!}>
+                                                                            {item.label}
+                                                                        </SelectItem>
+                                                                    ))}
+                                                                </SelectGroup>
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </Field>
+                                                    <Field>
+                                                        <Label htmlFor="harga_beli">Harga Beli</Label>
+                                                        <Input id="harga_beli" name="harga_beli" type='number' min={0} value={hargaBeli} onChange={e => setHargaBeli(e.target.valueAsNumber)} required />
+                                                    </Field>
+                                                    <Field>
+                                                        <Label htmlFor="harga_jual">Harga Jual</Label>
+                                                        <Input id="harga_jual" name="harga_jual" type='number' min={0} value={hargaJual} onChange={e => setHargaJual(e.target.valueAsNumber)} required />
+                                                    </Field>
+                                                </FieldGroup>
+                                                <DialogFooter className='mt-2'>
+                                                    <DialogClose className='cursor-pointer bg-white hover:bg-white/40 font-semibold py-2 px-3 rounded-lg text-sm shadow-sm shadow-gray-300'>
+                                                        Cancel
+                                                    </DialogClose>
+                                                    <Button className='cursor-pointer' type="submit">Submit</Button>
+                                                </DialogFooter>
+                                            </form>
+                                        </DialogContent>
+                                    </Dialog>
                                     <AlertDialog>
                                         <AlertDialogTrigger asChild>
                                             <Button className='bg-gray-200' onClick={async (e) => {
