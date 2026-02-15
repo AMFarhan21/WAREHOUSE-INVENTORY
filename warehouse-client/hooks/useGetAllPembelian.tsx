@@ -1,58 +1,53 @@
+'use client'
 import { useRouter } from 'next/navigation'
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
+import { Barang, User } from './useGetAllHistoryStok'
+import { Meta } from './useGetAllBarang'
 
-export interface HistoryStok {
+export interface Pembelian {
     id: number
-    barang_id: number
-    user_id: number
-    jenis_transaksi: string
-    jumlah: number
-    stok_sebelum: number
-    stok_sesudah: number
-    keterangan: string
-    created_at: string
-    barang: Barang
-    user: User
-}
-
-export interface Barang {
-    id: number
-    kode_barang: string
-    nama_barang: string
-    satuan: string
-    harga_jual: number
-}
-
-export interface User {
-    id: number
-    username: string
-    full_name: string
-}
-
-interface Meta {
-    page: number
-    limit: number
+    no_faktur: string
+    supplier: string
     total: number
+    user_id: number
+    status: string
+    created_at: string
+    user: User
+    beli_detail: BeliDetail
 }
 
-const useGetAllHistoryStok = () => {
-    const [historyStoks, setHistoryStok] = useState<HistoryStok[]>([])
+
+export interface BeliDetail {
+    id: number
+    jual_header_id: number
+    barang_id: number
+    qty: number
+    harga: number
+    subtotal: number
+    barang: Barang[]
+}
 
 
+const useGetAllPembelian = () => {
+    const [pembelians, setPembelians] = useState<Pembelian[]>([])
     const [meta, setMeta] = useState<Meta | null>(null)
     const [loading, setLoading] = useState(false)
-    const [limitNum, setLimitNum] = useState(10)
+    const [limitNum, setLimitNum] = useState(5)
     const [pageNum, setPageNum] = useState(0)
+    const [search, setSearch] = useState("")
+    const [startDate, setStartDate] = useState("")
+    const [endDate, setEndDate] = useState("")
     const [error, setError] = useState("")
     const router = useRouter()
     const API_URL = process.env.NEXT_PUBLIC_API_URL
+
 
     useEffect(() => {
         const token = localStorage.getItem("TOKEN")
         const getAllBarang = async () => {
             try {
                 setLoading(true)
-                const res = await fetch(`${API_URL}/api/history-stok?page=${pageNum}&limit=${limitNum}`, {
+                const res = await fetch(`${API_URL}/api/pembelian?page=${pageNum}&limit=${limitNum}&start_date=${startDate}&end_date=${endDate}`, {
                     headers: {
                         Authorization: `Bearer ${token}`
                     }
@@ -67,14 +62,13 @@ const useGetAllHistoryStok = () => {
                 }
 
 
-
                 if (!res.ok) {
                     setError(data.message)
                     return
                 }
 
 
-                setHistoryStok(data.data)
+                setPembelians(data.data)
                 setMeta(data.meta)
             } catch (error) {
 
@@ -86,11 +80,10 @@ const useGetAllHistoryStok = () => {
         }
 
         getAllBarang()
-    }, [API_URL, pageNum])
+    }, [API_URL, pageNum, search, limitNum, router, startDate, endDate])
 
 
-    return { historyStoks, loading, error, setPageNum, pageNum, limitNum, meta }
-
+    return { pembelians, setPembelians, loading, error, setPageNum, pageNum, limitNum, search, setSearch, meta, setStartDate, setEndDate, startDate, endDate }
 }
 
-export default useGetAllHistoryStok
+export default useGetAllPembelian

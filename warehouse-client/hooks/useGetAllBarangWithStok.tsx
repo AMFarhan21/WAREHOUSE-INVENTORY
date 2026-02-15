@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { Stok } from './useGetStokByBarangID'
+import { useRouter } from 'next/navigation'
 
 export interface BarangWithStok {
     id: number
@@ -30,6 +31,7 @@ const useGetAllBarangWithStok = () => {
     const [pageNum, setPageNum] = useState(0)
     const [search, setSearch] = useState("")
     const [error, setError] = useState("")
+    const router = useRouter()
     const API_URL = process.env.NEXT_PUBLIC_API_URL
 
 
@@ -45,6 +47,15 @@ const useGetAllBarangWithStok = () => {
                 })
 
                 const data = await res.json()
+
+                if (data.error_code == "UNAUTHORIZED") {
+                    localStorage.removeItem("TOKEN")
+                    router.replace("/auth/login")
+                    return
+                }
+
+
+
                 if (!res.ok) {
                     setError(data.message)
                     return

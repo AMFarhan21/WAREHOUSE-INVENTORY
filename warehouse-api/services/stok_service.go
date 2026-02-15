@@ -13,7 +13,7 @@ type StokRepo interface {
 	GetStokByBarangID(tx *gorm.DB, barangID int) (*models.Mstok, error)
 	UpdateStok(tx *gorm.DB, barangID, stok int) error
 	GetHistoryStok(ctx context.Context, offset, limit int) ([]models.HistoryStok, int64, error)
-	GetHistoryStokByBarangID(ctx context.Context, barangID int) ([]models.HistoryStok, error)
+	GetHistoryStokByBarangID(ctx context.Context, offset, limit, barangID int) ([]models.HistoryStok, int64, error)
 	CreateHistoryStok(tx *gorm.DB, data models.HistoryStok) (*models.HistoryStok, error)
 	LockStok(tx *gorm.DB, barangID int) (*models.Mstok, error)
 	DeleteStok(tx *gorm.DB, barangID int) error
@@ -77,6 +77,16 @@ func (s *StokService) GetHistoryStok(ctx context.Context, page, limit int) ([]mo
 	offset := (page - 1) * limit
 	return s.stokRepo.GetHistoryStok(ctx, offset, limit)
 }
-func (s *StokService) GetHistoryStokByBarangID(ctx context.Context, barangID int) ([]models.HistoryStok, error) {
-	return s.stokRepo.GetHistoryStokByBarangID(ctx, barangID)
+func (s *StokService) GetHistoryStokByBarangID(ctx context.Context, page, limit, barangID int) ([]models.HistoryStok, int64, error) {
+	if page < 1 {
+		page = 1
+	}
+
+	if limit < 1 {
+		limit = 5
+	}
+
+	offset := (page - 1) * limit
+
+	return s.stokRepo.GetHistoryStokByBarangID(ctx, offset, limit, barangID)
 }

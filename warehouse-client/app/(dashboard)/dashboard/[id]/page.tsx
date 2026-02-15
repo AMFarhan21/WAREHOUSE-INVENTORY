@@ -69,7 +69,8 @@ const Page = () => {
     const { barang, error, loading } = useGetBarang(Number(barangID))
     const { stok } = useGetStokByBarangID(Number(barangID))
 
-    const { historyStoksByBarangID } = useGetHistoryByBarangID(Number(barangID))
+    const { historyStoksByBarangID, limitNum, meta, pageNum, setPageNum } = useGetHistoryByBarangID(Number(barangID))
+    const totalPage = Math.ceil((meta?.total || 0) / limitNum)
 
     return (
         <div className="w-full min-h-screen flex">
@@ -80,6 +81,7 @@ const Page = () => {
                         <TableRow>
                             <TableHead className="w-25">Nama Barang</TableHead>
                             <TableHead>Kode Barang</TableHead>
+                            <TableHead>Deskripsi</TableHead>
                             <TableHead>Unit</TableHead>
                             <TableHead>Stok Akhir</TableHead>
                             <TableHead className="text-right">Harga Beli</TableHead>
@@ -91,6 +93,7 @@ const Page = () => {
                         <TableRow className='cursor-pointer' key={barang?.id}>
                             <TableCell className="font-medium">{barang?.nama_barang}</TableCell>
                             <TableCell>{barang?.kode_barang}</TableCell>
+                            <TableCell>{barang?.deskripsi}</TableCell>
                             <TableCell>{barang?.satuan}</TableCell>
                             <TableCell>{stok?.stok_akhir}</TableCell>
                             <TableCell className="text-right">Rp. {barang?.harga_beli}</TableCell>
@@ -136,6 +139,27 @@ const Page = () => {
                         ))}
                     </TableBody>
                 </Table>
+                <Pagination className='mt-4'>
+                    <PaginationContent>
+                        <PaginationItem>
+                            <PaginationPrevious className='cursor-pointer' onClick={() => pageNum > 1 && setPageNum(pageNum - 1)} />
+                        </PaginationItem>
+                        {
+                            Array.from({ length: totalPage }).map((_, i) => (
+                                <PaginationItem className='cursor-pointer' key={i}>
+                                    <PaginationLink onClick={() => {
+                                        setPageNum(i + 1)
+                                    }} isActive={pageNum == i + 1}>
+                                        {i + 1}
+                                    </PaginationLink>
+                                </PaginationItem>
+                            ))
+                        }
+                        <PaginationItem>
+                            <PaginationNext className='cursor-pointer' onClick={() => pageNum != totalPage && setPageNum(pageNum + 1)} />
+                        </PaginationItem>
+                    </PaginationContent>
+                </Pagination>
             </div>
         </div>
     )

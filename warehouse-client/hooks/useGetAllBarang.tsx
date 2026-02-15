@@ -1,4 +1,5 @@
 'use client'
+import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 export interface MasterBarang {
@@ -28,6 +29,7 @@ const useGetAllBarang = () => {
     const [pageNum, setPageNum] = useState(0)
     const [search, setSearch] = useState("")
     const [error, setError] = useState("")
+    const router = useRouter()
     const API_URL = process.env.NEXT_PUBLIC_API_URL
 
 
@@ -43,10 +45,19 @@ const useGetAllBarang = () => {
                 })
 
                 const data = await res.json()
+
+                if (data.error_code == "UNAUTHORIZED") {
+                    localStorage.removeItem("TOKEN")
+                    router.replace("/auth/login")
+                    return
+                }
+
+
                 if (!res.ok) {
                     setError(data.message)
                     return
                 }
+
 
                 setBarangs(data.data)
                 setMeta(data.meta)
@@ -60,7 +71,7 @@ const useGetAllBarang = () => {
         }
 
         getAllBarang()
-    }, [API_URL, pageNum, search])
+    }, [API_URL, pageNum, search, limitNum, router])
 
 
     return { barangs, setBarangs, loading, error, setPageNum, pageNum, limitNum, search, setSearch, meta }

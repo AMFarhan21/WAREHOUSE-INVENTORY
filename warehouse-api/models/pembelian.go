@@ -30,12 +30,12 @@ type Pembelian struct {
 	Status     string                 `json:"status"`
 	CreatedAt  time.Time              `json:"created_at"`
 	User       User                   `json:"user" gorm:"foreignKey:UserID"`
-	BeliDetail []BeliDetailWithBarang `json:"jual_detail" gorm:"foreignKey:BeliHeaderID"`
+	BeliDetail []BeliDetailWithBarang `json:"beli_detail" gorm:"foreignKey:BeliHeaderID"`
 }
 
 type BeliDetailWithBarang struct {
 	ID           int     `json:"id"`
-	BeliHeaderID int     `json:"jual_header_id"`
+	BeliHeaderID int     `json:"beli_header_id"`
 	BarangID     int     `json:"barang_id"`
 	Qty          int     `json:"qty"`
 	Harga        float64 `json:"harga"`

@@ -113,6 +113,8 @@ const Page = () => {
                             </TableHead>
                             <TableHead>Nama Barang</TableHead>
                             <TableHead>Kode Barang</TableHead>
+                            <TableHead>Harga Beli</TableHead>
+                            <TableHead>Harga Jual</TableHead>
                             <TableHead>Stok Akhir</TableHead>
                             <TableHead>Qty</TableHead>
                         </TableRow>
@@ -135,6 +137,8 @@ const Page = () => {
                                 </TableCell>
                                 <TableCell className="font-medium">{item.nama_barang}</TableCell>
                                 <TableCell className="font-medium">{item.kode_barang}</TableCell>
+                                <TableCell>Rp.{item.harga_beli}</TableCell>
+                                <TableCell>Rp.{item.harga_jual}</TableCell>
                                 <TableCell>{item.stok?.stok_akhir ?? 0}</TableCell>
                                 <TableCell className="w-30"><Input name="qty" value={qtys[item.id] || 1} onChange={e => handleQtyChange(String(item.id), e.target.valueAsNumber)} type="number" min={1} required /></TableCell>
                             </TableRow>

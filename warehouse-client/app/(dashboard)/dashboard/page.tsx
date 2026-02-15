@@ -208,7 +208,8 @@ const Page = () => {
                             <TableHead>Unit</TableHead>
                             <TableHead className="text-right">Harga Beli</TableHead>
                             <TableHead className="text-right">Harga Jual</TableHead>
-                            <TableHead className="text-right">Action</TableHead>
+                            <TableHead className="text-right"></TableHead>
+                            <TableHead className="text-left">Action</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -219,18 +220,15 @@ const Page = () => {
                                 <TableCell>{barang.satuan}</TableCell>
                                 <TableCell className="text-right">Rp. {barang.harga_beli}</TableCell>
                                 <TableCell className="text-right">Rp. {barang.harga_jual}</TableCell>
-                                <TableCell className="text-right space-x-4">
-                                    {/* <Button className='bg-gray-200' onClick={async (e) => {
-                                        e.stopPropagation()
-                                    }}> <Edit className='text-blue-500' /> </Button> */}
+                                <TableCell className="text-right">
                                     <Dialog>
                                         <DialogTrigger
                                             onClick={async (e) => {
                                                 e.stopPropagation()
                                                 handleEditClick(barang)
                                             }}
-                                            className='cursor-pointer bg-white mt-4 hover:bg-white/40 font-semibold py-1 px-1 rounded-lg text-sm shadow-sm shadow-gray-300'>
-                                            <Edit className='text-blue-500' />
+                                            className='cursor-pointer bg-gray-200 hover:bg-blue-500  text-blue-500 hover:text-white font-semibold w-8 h-8 rounded-sm text-sm shadow-sm shadow-gray-300'>
+                                            <Edit className='w-5 mx-auto' />
                                         </DialogTrigger>
 
                                         <DialogContent className="sm:max-w-sm" onClick={e => e.stopPropagation()}>
@@ -288,11 +286,16 @@ const Page = () => {
                                             </form>
                                         </DialogContent>
                                     </Dialog>
+                                </TableCell>
+                                <TableCell className='text-center'>
                                     <AlertDialog>
                                         <AlertDialogTrigger asChild>
-                                            <Button className='bg-gray-200' onClick={async (e) => {
+
+                                            <Button className='bg-gray-200 rounded-sm hover:bg-red-500 cursor-pointer hover:text-white text-red-500' onClick={async (e) => {
                                                 e.stopPropagation()
-                                            }}><Trash className='text-red-500' /> </Button>
+                                            }}>
+                                                <Trash className='' />
+                                            </Button>
                                         </AlertDialogTrigger >
 
                                         <AlertDialogContent onClick={async (e) => {

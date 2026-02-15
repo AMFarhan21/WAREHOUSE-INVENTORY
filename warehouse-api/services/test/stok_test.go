@@ -137,13 +137,17 @@ func TestGetHistoryStokByBarangID(t *testing.T) {
 
 	mockStokRepo.
 		EXPECT().
-		GetHistoryStokByBarangID(gomock.Any(), 1).
-		Return(expected, nil)
+		GetHistoryStokByBarangID(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+		Return(expected, int64(1), nil)
 
-	result, err := service.GetHistoryStokByBarangID(context.Background(), 1)
+	result, total, err := service.GetHistoryStokByBarangID(context.Background(), 1, 1, 1)
 
 	if err != nil {
 		t.Fatal(err)
+	}
+
+	if total != 1 {
+		t.Fatal("total is mismatch")
 	}
 
 	if len(result) != 1 {

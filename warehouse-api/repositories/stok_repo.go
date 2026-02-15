@@ -90,15 +90,23 @@ func (r *StokRepo) GetHistoryStok(ctx context.Context, offset, limit int) ([]mod
 	return HistoryStok, total, nil
 }
 
-func (r *StokRepo) GetHistoryStokByBarangID(ctx context.Context, barangID int) ([]models.HistoryStok, error) {
+func (r *StokRepo) GetHistoryStokByBarangID(ctx context.Context, offset, limit, barangID int) ([]models.HistoryStok, int64, error) {
 	var HistoryStok []models.HistoryStok
 
-	err := r.DB.Model(&models.HistoryStok{}).Preload("User").Preload("Barang").WithContext(ctx).Where("barang_id=?", barangID).Find(&HistoryStok).Error
+	db := r.DB.Model(&models.HistoryStok{}).Preload("User").Preload("Barang").WithContext(ctx).Where("barang_id=?", barangID)
+
+	var total int64
+	err := db.Count(&total).Error
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
-	return HistoryStok, nil
+	err = db.Offset(offset).Limit(limit).Order("id DESC").Find(&HistoryStok).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return HistoryStok, total, nil
 }
 
 func (r *StokRepo) CreateHistoryStok(tx *gorm.DB, data models.HistoryStok) (*models.HistoryStok, error) {

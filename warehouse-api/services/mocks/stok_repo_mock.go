@@ -113,18 +113,19 @@ func (mr *MockStokRepoMockRecorder) GetHistoryStok(ctx, offset, limit interface{
 }
 
 // GetHistoryStokByBarangID mocks base method.
-func (m *MockStokRepo) GetHistoryStokByBarangID(ctx context.Context, barangID int) ([]models.HistoryStok, error) {
+func (m *MockStokRepo) GetHistoryStokByBarangID(ctx context.Context, offset, limit, barangID int) ([]models.HistoryStok, int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetHistoryStokByBarangID", ctx, barangID)
+	ret := m.ctrl.Call(m, "GetHistoryStokByBarangID", ctx, offset, limit, barangID)
 	ret0, _ := ret[0].([]models.HistoryStok)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret1, _ := ret[1].(int64)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // GetHistoryStokByBarangID indicates an expected call of GetHistoryStokByBarangID.
-func (mr *MockStokRepoMockRecorder) GetHistoryStokByBarangID(ctx, barangID interface{}) *gomock.Call {
+func (mr *MockStokRepoMockRecorder) GetHistoryStokByBarangID(ctx, offset, limit, barangID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetHistoryStokByBarangID", reflect.TypeOf((*MockStokRepo)(nil).GetHistoryStokByBarangID), ctx, barangID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetHistoryStokByBarangID", reflect.TypeOf((*MockStokRepo)(nil).GetHistoryStokByBarangID), ctx, offset, limit, barangID)
 }
 
 // GetStokByBarangID mocks base method.

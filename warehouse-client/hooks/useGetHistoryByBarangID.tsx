@@ -1,3 +1,4 @@
+import { useRouter } from 'next/navigation'
 import React, { useEffect, useState } from 'react'
 
 export interface HistoryStok {
@@ -43,6 +44,7 @@ const useGetHistoryByBarangID = (barangID: number) => {
     const [limitNum, setLimitNum] = useState(5)
     const [pageNum, setPageNum] = useState(0)
     const [error, setError] = useState("")
+    const router = useRouter()
     const API_URL = process.env.NEXT_PUBLIC_API_URL
 
     useEffect(() => {
@@ -50,13 +52,21 @@ const useGetHistoryByBarangID = (barangID: number) => {
         const getAllBarang = async () => {
             try {
                 setLoading(true)
-                const res = await fetch(`${API_URL}/api/history-stok/${barangID}`, {
+                const res = await fetch(`${API_URL}/api/history-stok/${barangID}?page=${pageNum}&limit=${limitNum}`, {
                     headers: {
                         Authorization: `Bearer ${token}`
                     }
                 })
 
                 const data = await res.json()
+                if (data.error_code == "UNAUTHORIZED") {
+                    localStorage.removeItem("TOKEN")
+                    router.replace("/auth/login")
+                    return
+                }
+
+
+
                 if (!res.ok) {
                     setError(data.message)
                     return

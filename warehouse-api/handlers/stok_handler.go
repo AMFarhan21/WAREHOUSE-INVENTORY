@@ -17,7 +17,7 @@ type StokService interface {
 	GetAllStok(ctx context.Context, page, limit int) ([]models.Mstok, int64, error)
 	GetStokByBarangID(ctx context.Context, barangID int) (*models.Mstok, error)
 	GetHistoryStok(ctx context.Context, page, limit int) ([]models.HistoryStok, int64, error)
-	GetHistoryStokByBarangID(ctx context.Context, barangID int) ([]models.HistoryStok, error)
+	GetHistoryStokByBarangID(ctx context.Context, page, limit, barangID int) ([]models.HistoryStok, int64, error)
 }
 
 type StokHandler struct {
@@ -123,8 +123,10 @@ func (h *StokHandler) GetHistoryStok(g *gin.Context) {
 
 func (h *StokHandler) GetHistoryStokByBarangID(g *gin.Context) {
 	barangID, _ := strconv.Atoi(g.Param("barangID"))
+	page, _ := strconv.Atoi(g.DefaultQuery("page", "1"))
+	limit, _ := strconv.Atoi(g.DefaultQuery("limit", "5"))
 
-	stok, err := h.stokService.GetHistoryStokByBarangID(g.Request.Context(), barangID)
+	stok, total, err := h.stokService.GetHistoryStokByBarangID(g.Request.Context(), page, limit, barangID)
 	if err != nil {
 		if strings.Contains(err.Error(), "not found") {
 			g.JSON(http.StatusUnprocessableEntity, response.ErrorResponse{
@@ -149,5 +151,10 @@ func (h *StokHandler) GetHistoryStokByBarangID(g *gin.Context) {
 		Success: true,
 		Message: "Data retrieved successfully",
 		Data:    stok,
+		Meta: &response.Meta{
+			Page:  page,
+			Limit: limit,
+			Total: total,
+		},
 	})
 }
