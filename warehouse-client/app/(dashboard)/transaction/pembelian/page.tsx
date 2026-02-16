@@ -83,6 +83,10 @@ const Page = () => {
         if (res) {
             toast.success("Pembelian berhasil")
         }
+
+        setSupplier("")
+        setSelectedRows(new Set())
+        setQtys({})
     }
 
     return (

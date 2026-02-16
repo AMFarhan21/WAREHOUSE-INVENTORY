@@ -97,6 +97,11 @@ const Page = () => {
         const data = await createBarang(namaBarang, deskripsi, satuan, hargaBeli, hargaJual)
         toast.success("Successfully create barang")
         setBarangs(prev => [data, ...prev])
+        setNamaBarang("")
+        setDeskripsi("")
+        setSatuan("")
+        setHargaBeli(0)
+        setHargaJual(0)
     }
 
     const handleUpdateBarangSubmit = async (e: React.SubmitEvent) => {
