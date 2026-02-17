@@ -218,7 +218,7 @@ const Page = () => {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {barangs.map((barang) => (
+                        {barangs && barangs.map((barang) => (
                             <TableRow onClick={() => router.replace(`dashboard/${barang.id}`)} className='cursor-pointer' key={barang.id}>
                                 <TableCell className="font-medium">{barang.nama_barang}</TableCell>
                                 <TableCell>{barang.kode_barang}</TableCell>
