@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/button"
 import toast from "react-hot-toast"
 
 const Page = () => {
-    const { barangsWithStok } = useGetAllBarangWithStok()
+    const { barangsWithStok, setBarangsWithStok } = useGetAllBarangWithStok()
     const { createPembelian, loading, error } = useCreatePembelian()
     const [supplier, setSupplier] = useState("")
     const [qtys, setQtys] = useState<Record<string, number>>({})
@@ -76,6 +76,25 @@ const Page = () => {
             barang_id: Number(id),
             qty: qtys[id] ?? 1
         }))
+
+
+        setBarangsWithStok(prev => {
+            return prev.map(item => {
+                const barang = beli_detail.find(beli => beli.barang_id == item.id)
+
+                if (barang && item.stok) {
+                    return {
+                        ...item,
+                        stok: {
+                            ...item.stok,
+                            stok_akhir: item.stok.stok_akhir + barang.qty
+                        }
+                    }
+                }
+
+                return item
+            })
+        })
 
         console.log("Payload yang dikirim:", { supplier, beli_detail });
         const res = await createPembelian(supplier, beli_detail)

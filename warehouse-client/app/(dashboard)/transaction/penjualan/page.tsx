@@ -18,7 +18,7 @@ import toast from "react-hot-toast"
 import useCreatePenjualan from "@/hooks/useCreatePenjualan"
 
 const Page = () => {
-    const { barangsWithStok } = useGetAllBarangWithStok()
+    const { barangsWithStok, setBarangsWithStok } = useGetAllBarangWithStok()
     const { createPenjualan, loading, error } = useCreatePenjualan()
     const [customer, setCustomer] = useState("")
     const [qtys, setQtys] = useState<Record<string, number>>({})
@@ -70,10 +70,29 @@ const Page = () => {
         console.log("SETERROR: ", error)
 
         const jual_detail = Array.from(selectedRows).filter(id => id !== "").map(id => ({
-
             barang_id: Number(id),
             qty: qtys[id] ?? 1
         }))
+
+        setBarangsWithStok(prev => {
+            return prev.map(item => {
+                const barang = jual_detail.find(jual => jual.barang_id == item.id)
+
+                if (barang && item.stok) {
+                    return {
+                        ...item,
+                        stok: {
+                            ...item.stok,
+                            stok_akhir: item.stok.stok_akhir - barang.qty
+                        }
+                    }
+                }
+
+                return item
+            })
+        })
+
+
 
         console.log("Payload yang dikirim:", { customer, jual_detail });
         const res = await createPenjualan(customer, jual_detail)
