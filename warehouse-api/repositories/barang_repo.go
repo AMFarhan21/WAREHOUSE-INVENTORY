@@ -3,6 +3,7 @@ package repositories
 import (
 	"context"
 	"errors"
+	"time"
 	"warehouse/config/response"
 	"warehouse/models"
 
@@ -21,23 +22,23 @@ func NewBarangRepo(DB *gorm.DB) *BarangRepo {
 
 func (r *BarangRepo) GetAllBarang(ctx context.Context, search string, offset, limit int) ([]models.MasterBarang, int64, error) {
 
-	db := r.DB.Table("master_barang").WithContext(ctx)
+	db := r.DB.Table("master_barang").WithContext(ctx).Where("deleted_at IS NULL")
 
 	if search != "" {
 		searchQuery := "%" + search + "%"
 		db = db.Where("nama_barang ILIKE ? or kode_barang ILIKE ?", searchQuery, searchQuery)
 	}
 
-	var masterBarang []models.MasterBarang
-	err := db.WithContext(ctx).Offset(offset).Limit(limit).Order("id DESC").Find(&masterBarang).Error
+	var total int64
+	err := db.Count(&total).Error
 	if err != nil {
-		return nil, 0, nil
+		return nil, 0, err
 	}
 
-	var total int64
-	err = db.WithContext(ctx).Count(&total).Error
+	var masterBarang []models.MasterBarang
+	err = db.Offset(offset).Limit(limit).Order("id DESC").Find(&masterBarang).Error
 	if err != nil {
-		return nil, 0, nil
+		return nil, 0, err
 	}
 
 	return masterBarang, total, nil
@@ -50,28 +51,12 @@ func (r *BarangRepo) CreateBarang(tx *gorm.DB, data models.MasterBarang) (*model
 	}
 
 	return &data, nil
-
-	// return &data, r.DB.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-	// 	err := tx.Table("master_barang").WithContext(ctx).Create(&data).Error
-	// 	if err != nil {
-	// 		return err
-	// 	}
-
-	// 	data.KodeBarang = fmt.Sprintf("BRG%03d", data.ID)
-
-	// 	err = tx.Table("master_barang").WithContext(ctx).Where("id=?", data.ID).Update("kode_barang", data.KodeBarang).Error
-	// 	if err != nil {
-	// 		return err
-	// 	}
-
-	// 	return nil
-	// })
 }
 
 func (r *BarangRepo) GetBarang(tx *gorm.DB, id int) (*models.MasterBarang, error) {
 	var masterBarang models.MasterBarang
 
-	err := tx.Table("master_barang").Where("id=?", id).First(&masterBarang).Error
+	err := tx.Table("master_barang").Where("id=? AND deleted_at IS NULL", id).First(&masterBarang).Error
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +65,7 @@ func (r *BarangRepo) GetBarang(tx *gorm.DB, id int) (*models.MasterBarang, error
 }
 
 func (r *BarangRepo) UpdateBarang(tx *gorm.DB, data models.MasterBarang) error {
-	row := tx.Table("master_barang").Where("id=?", data.ID).Updates(data)
+	row := tx.Table("master_barang").Where("id=? AND deleted_at IS NULL", data.ID).Updates(data)
 	err := row.Error
 	if err != nil {
 		return err
@@ -94,7 +79,8 @@ func (r *BarangRepo) UpdateBarang(tx *gorm.DB, data models.MasterBarang) error {
 }
 
 func (r *BarangRepo) DeleteBarang(tx *gorm.DB, id int) error {
-	row := tx.Table("master_barang").Where("id=?", id).Delete(models.MasterBarang{})
+	// row := tx.Table("master_barang").Where("id=?", id).Delete(models.MasterBarang{})
+	row := tx.Table("master_barang").Where("id=? AND deleted_at IS NULL", id).Update("deleted_at", time.Now())
 	err := row.Error
 	if err != nil {
 		return err
@@ -110,17 +96,17 @@ func (r *BarangRepo) DeleteBarang(tx *gorm.DB, id int) error {
 func (r *BarangRepo) GetAllBarangWithStok(ctx context.Context, offset, limit int) ([]models.MasterBarangWithStok, int64, error) {
 	var masterBarangWithStok []models.MasterBarangWithStok
 
-	err := r.DB.Model(&models.MasterBarang{}).
-		Preload("Stok").
-		WithContext(ctx).Offset(offset).Limit(limit).Find(&masterBarangWithStok).Error
-	if err != nil {
-		return nil, 0, nil
-	}
+	db := r.DB.Model(&models.MasterBarang{}).Preload("Stok", "deleted_at IS NULL").WithContext(ctx).Where("deleted_at IS NULL")
 
 	var total int64
-	err = r.DB.Table("master_barang").WithContext(ctx).Count(&total).Error
+	err := db.Count(&total).Error
 	if err != nil {
-		return nil, 0, nil
+		return nil, 0, err
+	}
+
+	err = db.Offset(offset).Limit(limit).Find(&masterBarangWithStok).Error
+	if err != nil {
+		return nil, 0, err
 	}
 
 	return masterBarangWithStok, total, nil

@@ -54,6 +54,7 @@ func (s *BarangService) CreateBarang(ctx context.Context, data models.MasterBara
 		}
 
 		barang.KodeBarang = fmt.Sprintf("BRG%03d", barang.ID)
+		// barang.DeletedAt = nil
 		err = s.barangRepo.UpdateBarang(tx, *barang)
 		if err != nil {
 			return err

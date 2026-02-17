@@ -3,11 +3,12 @@ package models
 import "time"
 
 type Mstok struct {
-	ID        int       `json:"id" gorm:"autoIncrement:true"`
-	BarangID  int       `json:"barang_id"`
-	StokAkhir int       `json:"stok_akhir"`
-	UpdatedAt time.Time `json:"updated_at"`
-	Barang    Barang    `json:"barang" gorm:"foreignKey:BarangID"`
+	ID        int        `json:"id" gorm:"autoIncrement:true"`
+	BarangID  int        `json:"barang_id"`
+	StokAkhir int        `json:"stok_akhir"`
+	UpdatedAt time.Time  `json:"updated_at"`
+	Barang    Barang     `json:"barang" gorm:"foreignKey:BarangID"`
+	DeletedAt *time.Time `json:"deleted_at"`
 }
 
 type Stok struct {

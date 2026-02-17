@@ -3,15 +3,16 @@ package models
 import "time"
 
 type MasterBarang struct {
-	ID         int       `json:"id" gorm:"autoIncrement:true"`
-	KodeBarang string    `json:"kode_barang"`
-	NamaBarang string    `json:"nama_barang"`
-	Deskripsi  *string   `json:"deskripsi"`
-	Satuan     string    `json:"satuan"`
-	HargaBeli  float64   `json:"harga_beli"`
-	HargaJual  float64   `json:"harga_jual"`
-	CreatedAt  time.Time `json:"created_at"`
-	UpdatedAt  time.Time `json:"updated_at"`
+	ID         int        `json:"id" gorm:"autoIncrement:true"`
+	KodeBarang string     `json:"kode_barang"`
+	NamaBarang string     `json:"nama_barang"`
+	Deskripsi  *string    `json:"deskripsi"`
+	Satuan     string     `json:"satuan"`
+	HargaBeli  float64    `json:"harga_beli"`
+	HargaJual  float64    `json:"harga_jual"`
+	CreatedAt  time.Time  `json:"created_at"`
+	UpdatedAt  time.Time  `json:"updated_at"`
+	DeletedAt  *time.Time `json:"deleted_at"`
 }
 
 type MasterBarangWithStok struct {

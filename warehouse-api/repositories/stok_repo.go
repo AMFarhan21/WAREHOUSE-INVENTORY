@@ -3,6 +3,7 @@ package repositories
 import (
 	"context"
 	"errors"
+	"time"
 	"warehouse/config/response"
 	"warehouse/models"
 
@@ -32,16 +33,16 @@ func (r *StokRepo) CreateStok(tx *gorm.DB, data models.Mstok) (*models.Mstok, er
 func (r *StokRepo) GetAllStok(ctx context.Context, offset, limit int) ([]models.Mstok, int64, error) {
 	var Stok []models.Mstok
 
-	db := r.DB.Model(&models.Mstok{}).Preload("Barang").WithContext(ctx)
+	db := r.DB.Model(&models.Mstok{}).Preload("Barang", "deleted_at IS NULL").Where("deleted_at IS NULL").WithContext(ctx)
 	err := db.WithContext(ctx).Offset(offset).Limit(limit).Order("id ASC").Find(&Stok).Error
 	if err != nil {
-		return nil, 0, nil
+		return nil, 0, err
 	}
 
 	var total int64
 	err = db.WithContext(ctx).Count(&total).Error
 	if err != nil {
-		return nil, 0, nil
+		return nil, 0, err
 	}
 
 	return Stok, total, nil
@@ -50,7 +51,7 @@ func (r *StokRepo) GetAllStok(ctx context.Context, offset, limit int) ([]models.
 func (r *StokRepo) GetStokByBarangID(tx *gorm.DB, barangID int) (*models.Mstok, error) {
 	var Stok models.Mstok
 
-	err := tx.Model(&models.Mstok{}).Preload("Barang").Where("barang_id=?", barangID).First(&Stok).Error
+	err := tx.Model(&models.Mstok{}).Preload("Barang", "deleted_at IS NULL").Where("barang_id=? AND deleted_at IS NULL", barangID).First(&Stok).Error
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +60,7 @@ func (r *StokRepo) GetStokByBarangID(tx *gorm.DB, barangID int) (*models.Mstok, 
 }
 
 func (r *StokRepo) UpdateStok(tx *gorm.DB, barangID, stok int) error {
-	row := tx.Table("mstok").Where("barang_id=?", barangID).Update("stok_akhir", stok)
+	row := tx.Table("mstok").Where("barang_id=? AND deleted_at IS NULL", barangID).Update("stok_akhir", stok)
 	if err := row.Error; err != nil {
 		return err
 	}
@@ -76,13 +77,13 @@ func (r *StokRepo) GetHistoryStok(ctx context.Context, offset, limit int) ([]mod
 
 	db := r.DB.Model(&models.HistoryStok{}).Preload("User").Preload("Barang")
 
-	err := db.WithContext(ctx).Offset(offset).Limit(limit).Order("id DESC").Find(&HistoryStok).Error
+	var total int64
+	err := db.WithContext(ctx).Count(&total).Error
 	if err != nil {
 		return nil, 0, err
 	}
 
-	var total int64
-	err = db.WithContext(ctx).Count(&total).Error
+	err = db.WithContext(ctx).Offset(offset).Limit(limit).Order("id DESC").Find(&HistoryStok).Error
 	if err != nil {
 		return nil, 0, err
 	}
@@ -120,7 +121,7 @@ func (r *StokRepo) CreateHistoryStok(tx *gorm.DB, data models.HistoryStok) (*mod
 
 func (r *StokRepo) LockStok(tx *gorm.DB, barangID int) (*models.Mstok, error) {
 	var stok models.Mstok
-	err := tx.Table("mstok").Clauses(clause.Locking{Strength: "UPDATE"}).Where("barang_id=?", barangID).First(&stok).Error
+	err := tx.Table("mstok").Clauses(clause.Locking{Strength: "UPDATE"}).Where("barang_id=? AND deleted_at IS NULL", barangID).First(&stok).Error
 	if err != nil {
 		return nil, err
 	}
@@ -129,7 +130,8 @@ func (r *StokRepo) LockStok(tx *gorm.DB, barangID int) (*models.Mstok, error) {
 }
 
 func (r *StokRepo) DeleteStok(tx *gorm.DB, barangID int) error {
-	row := tx.Table("mstok").Where("barang_id=?", barangID).Delete(&models.Mstok{})
+	// row := tx.Table("mstok").Where("barang_id=?", barangID).Delete(&models.Mstok{})
+	row := tx.Table("mstok").Where("barang_id=? AND deleted_at IS NULL", barangID).Update("deleted_at", time.Now())
 	if err := row.Error; err != nil {
 		return err
 	}

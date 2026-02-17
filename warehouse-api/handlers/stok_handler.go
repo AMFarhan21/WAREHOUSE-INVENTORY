@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 	"warehouse/config/response"
 	"warehouse/models"
 
@@ -23,6 +24,14 @@ type StokService interface {
 type StokHandler struct {
 	stokService StokService
 	validate    *validator.Validate
+}
+
+type MstokResponse struct {
+	ID        int           `json:"id" gorm:"autoIncrement:true"`
+	BarangID  int           `json:"barang_id"`
+	StokAkhir int           `json:"stok_akhir"`
+	UpdatedAt time.Time     `json:"updated_at"`
+	Barang    models.Barang `json:"barang" gorm:"foreignKey:BarangID"`
 }
 
 func NewStokHandler(stokService StokService) *StokHandler {
@@ -49,10 +58,22 @@ func (h *StokHandler) GetAllStok(g *gin.Context) {
 		return
 	}
 
+	var mstokResponse []MstokResponse
+
+	for _, item := range stok {
+		mstokResponse = append(mstokResponse, MstokResponse{
+			ID:        item.ID,
+			BarangID:  item.BarangID,
+			StokAkhir: item.StokAkhir,
+			UpdatedAt: item.UpdatedAt,
+			Barang:    item.Barang,
+		})
+	}
+
 	g.JSON(http.StatusOK, response.SuccessResponse{
 		Success: true,
 		Message: "Data retrieved successfully",
-		Data:    stok,
+		Data:    mstokResponse,
 		Meta: &response.Meta{
 			Page:  page,
 			Limit: limit,
@@ -88,7 +109,13 @@ func (h *StokHandler) GetStokByBarangID(g *gin.Context) {
 	g.JSON(http.StatusOK, response.SuccessResponse{
 		Success: true,
 		Message: "Data retrieved successfully",
-		Data:    stok,
+		Data: MstokResponse{
+			ID:        stok.ID,
+			BarangID:  stok.BarangID,
+			StokAkhir: stok.StokAkhir,
+			UpdatedAt: stok.UpdatedAt,
+			Barang:    stok.Barang,
+		},
 	})
 }
 

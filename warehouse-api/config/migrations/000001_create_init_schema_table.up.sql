@@ -19,7 +19,8 @@ CREATE TABLE master_barang (
     harga_beli DECIMAL(15,2) DEFAULT 0,
     harga_jual DECIMAL(15,2) DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP DEFAULT NULL
 );
 
 -- Table Stok
@@ -27,8 +28,10 @@ CREATE TABLE mstok (
     id SERIAL PRIMARY KEY,
     barang_id INTEGER REFERENCES master_barang(id),
     stok_akhir INTEGER DEFAULT 0,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP DEFAULT NULL
 );
+
 
 -- Table History Stok
 CREATE TABLE history_stok (

@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"time"
 	"warehouse/config/response"
 	"warehouse/models"
 
@@ -32,6 +33,16 @@ type RegisterUserRequest struct {
 type LoginRequest struct {
 	Email    string `json:"email" validate:"required,email"`
 	Password string `json:"password" validate:"required,min=4"`
+}
+
+type RegisterResponse struct {
+	ID        int       `json:"id"`
+	Username  string    `json:"username"`
+	Email     string    `json:"email"`
+	FullName  string    `json:"full_name"`
+	Role      string    `json:"role"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 func NewUserHandler(userService UserService) *UserHandler {
@@ -93,7 +104,15 @@ func (h *UserHandler) RegisterUser(g *gin.Context) {
 	g.JSON(http.StatusCreated, response.SuccessResponse{
 		Success: true,
 		Message: "User created successfully",
-		Data:    user,
+		Data: RegisterResponse{
+			ID:        user.ID,
+			Username:  user.Username,
+			Email:     user.Email,
+			FullName:  user.FullName,
+			Role:      user.Role,
+			CreatedAt: user.CreatedAt,
+			UpdatedAt: user.UpdatedAt,
+		},
 	})
 }
 

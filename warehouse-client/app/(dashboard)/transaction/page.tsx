@@ -105,7 +105,7 @@ const Page = () => {
                             <TableHeader>
                                 <TableRow>
                                     <TableHead>Nomor Faktur</TableHead>
-                                    <TableHead>Supplier</TableHead>
+                                    <TableHead>Customer</TableHead>
                                     <TableHead>Total</TableHead>
                                     <TableHead>Status</TableHead>
                                 </TableRow>

@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 	"warehouse/config/response"
 	"warehouse/models"
 
@@ -35,6 +36,18 @@ type inputBarang struct {
 	HargaJual  float64 `json:"harga_jual"`
 }
 
+type MasterBarangResponse struct {
+	ID         int       `json:"id" gorm:"autoIncrement:true"`
+	KodeBarang string    `json:"kode_barang"`
+	NamaBarang string    `json:"nama_barang"`
+	Deskripsi  *string   `json:"deskripsi"`
+	Satuan     string    `json:"satuan"`
+	HargaBeli  float64   `json:"harga_beli"`
+	HargaJual  float64   `json:"harga_jual"`
+	CreatedAt  time.Time `json:"created_at"`
+	UpdatedAt  time.Time `json:"updated_at"`
+}
+
 func NewBarangHandler(barangService BarangService) *BarangHandler {
 	return &BarangHandler{
 		barangService: barangService,
@@ -60,10 +73,25 @@ func (h *BarangHandler) GetAllBarang(g *gin.Context) {
 		return
 	}
 
+	var masterBarangResponse []MasterBarangResponse
+	for _, item := range barang {
+		masterBarangResponse = append(masterBarangResponse, MasterBarangResponse{
+			ID:         item.ID,
+			KodeBarang: item.KodeBarang,
+			NamaBarang: item.NamaBarang,
+			Deskripsi:  item.Deskripsi,
+			Satuan:     item.Satuan,
+			HargaBeli:  item.HargaBeli,
+			HargaJual:  item.HargaJual,
+			CreatedAt:  item.CreatedAt,
+			UpdatedAt:  item.UpdatedAt,
+		})
+	}
+
 	g.JSON(http.StatusOK, response.SuccessResponse{
 		Success: true,
 		Message: "Data retrieved successfully",
-		Data:    barang,
+		Data:    masterBarangResponse,
 		Meta: &response.Meta{
 			Page:  page,
 			Limit: limit,
@@ -118,7 +146,17 @@ func (h *BarangHandler) CreateBarang(g *gin.Context) {
 	g.JSON(http.StatusCreated, response.SuccessResponse{
 		Success: true,
 		Message: "Data created successfully",
-		Data:    barang,
+		Data: MasterBarangResponse{
+			ID:         barang.ID,
+			KodeBarang: barang.KodeBarang,
+			NamaBarang: barang.NamaBarang,
+			Deskripsi:  barang.Deskripsi,
+			Satuan:     barang.Satuan,
+			HargaBeli:  barang.HargaBeli,
+			HargaJual:  barang.HargaJual,
+			CreatedAt:  barang.CreatedAt,
+			UpdatedAt:  barang.UpdatedAt,
+		},
 	})
 }
 
@@ -151,7 +189,17 @@ func (h *BarangHandler) GetBarang(g *gin.Context) {
 	g.JSON(http.StatusOK, response.SuccessResponse{
 		Success: true,
 		Message: "Data retrieved successfully",
-		Data:    barang,
+		Data: MasterBarangResponse{
+			ID:         barang.ID,
+			KodeBarang: barang.KodeBarang,
+			NamaBarang: barang.NamaBarang,
+			Deskripsi:  barang.Deskripsi,
+			Satuan:     barang.Satuan,
+			HargaBeli:  barang.HargaBeli,
+			HargaJual:  barang.HargaJual,
+			CreatedAt:  barang.CreatedAt,
+			UpdatedAt:  barang.UpdatedAt,
+		},
 	})
 }
 
