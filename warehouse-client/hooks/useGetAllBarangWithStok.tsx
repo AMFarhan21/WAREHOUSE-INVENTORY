@@ -75,7 +75,7 @@ const useGetAllBarangWithStok = () => {
         }
 
         getAllBarangWithStok()
-    }, [API_URL, pageNum, search])
+    }, [API_URL, pageNum, search, limitNum, router])
 
 
     return { barangsWithStok, setBarangsWithStok, loading, error, setPageNum, pageNum, limitNum, setLimitNum, search, setSearch, meta }

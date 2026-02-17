@@ -32,7 +32,7 @@ const Page = () => {
     }
 
     const [selectedRows, setSelectedRows] = useState<Set<string>>(
-        new Set([""])
+        new Set()
     )
 
     const selectAll = selectedRows.size === barangsWithStok.length
@@ -67,12 +67,10 @@ const Page = () => {
             return
         }
 
-        if (error) {
-            toast.error(error)
-            return
-        }
+        console.log("SETERROR: ", error)
 
         const jual_detail = Array.from(selectedRows).filter(id => id !== "").map(id => ({
+
             barang_id: Number(id),
             qty: qtys[id] ?? 1
         }))
@@ -80,8 +78,10 @@ const Page = () => {
         console.log("Payload yang dikirim:", { customer, jual_detail });
         const res = await createPenjualan(customer, jual_detail)
 
-        if (res) {
+        if (res?.success) {
             toast.success("Penjualan berhasil")
+        } else {
+            toast.error(res?.message)
         }
 
         setCustomer("")
@@ -124,7 +124,7 @@ const Page = () => {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {barangsWithStok.map((item) => (
+                        {barangsWithStok && barangsWithStok.filter(item => item.stok && item.stok.stok_akhir > 0).map((item) => (
                             <TableRow
                                 key={item.id}
                                 data-state={selectedRows.has((String(item.id))) ? "selected" : undefined}

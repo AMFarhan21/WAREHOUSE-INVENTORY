@@ -28,17 +28,25 @@ const useGetAllBarang = () => {
     const [limitNum, setLimitNum] = useState(8)
     const [pageNum, setPageNum] = useState(0)
     const [search, setSearch] = useState("")
+    const [debouncedSearch, setDebouncedSearch] = useState(search)
     const [error, setError] = useState("")
     const router = useRouter()
     const API_URL = process.env.NEXT_PUBLIC_API_URL
 
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            setDebouncedSearch(search)
+        }, 500)
+
+        return () => clearTimeout(handler)
+    }, [search])
 
     useEffect(() => {
         const token = localStorage.getItem("TOKEN")
         const getAllBarang = async () => {
             try {
                 setLoading(true)
-                const res = await fetch(`${API_URL}/api/barang?search=${search}&page=${pageNum}&limit=${limitNum}`, {
+                const res = await fetch(`${API_URL}/api/barang?search=${debouncedSearch}&page=${pageNum}&limit=${limitNum}`, {
                     headers: {
                         Authorization: `Bearer ${token}`
                     }
@@ -71,7 +79,7 @@ const useGetAllBarang = () => {
         }
 
         getAllBarang()
-    }, [API_URL, pageNum, search, limitNum, router])
+    }, [API_URL, pageNum, debouncedSearch, limitNum, router])
 
 
     return { barangs, setBarangs, loading, error, setPageNum, pageNum, limitNum, search, setSearch, meta }

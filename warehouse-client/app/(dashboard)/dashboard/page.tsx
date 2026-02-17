@@ -94,9 +94,13 @@ const Page = () => {
             return
         }
 
-        const data = await createBarang(namaBarang, deskripsi, satuan, hargaBeli, hargaJual)
-        toast.success("Successfully create barang")
-        setBarangs(prev => [data, ...prev])
+        const res = await createBarang(namaBarang, deskripsi, satuan, hargaBeli, hargaJual)
+        if (res?.success) {
+            toast.success("Successfully create barang")
+        } else {
+            toast.error(res?.message)
+        }
+        setBarangs(prev => [res?.data, ...prev])
         setNamaBarang("")
         setDeskripsi("")
         setSatuan("")
@@ -113,8 +117,12 @@ const Page = () => {
             return
         }
 
-        await updateBarang(barangID, namaBarang, deskripsi, satuan, hargaBeli, hargaJual)
-        toast.success("Successfully update barang")
+        const res = await updateBarang(barangID, namaBarang, deskripsi, satuan, hargaBeli, hargaJual)
+        if (res?.success) {
+            toast.success("Successfully update barang")
+        } else {
+            toast.error(res?.message)
+        }
 
         setBarangs(prev => prev.map(item => item.id == barangID ? {
             ...item,

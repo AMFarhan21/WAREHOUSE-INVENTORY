@@ -24,11 +24,10 @@ const useUpdateBarang = () => {
 
             if (!res.ok) {
                 setError(data.message)
-                return
+                return { success: false, message: data.message }
             }
 
-            // setCreatedBarang(data.data)
-            return data.data
+            return { success: true, data: data.data }
         } catch (error) {
             console.log(error)
 

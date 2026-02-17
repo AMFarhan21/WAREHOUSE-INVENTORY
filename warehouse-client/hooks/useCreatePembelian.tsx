@@ -17,6 +17,7 @@ const useCreatePembelian = () => {
         try {
             setLoading(true)
             const token = localStorage.getItem("TOKEN")
+            console.log("CEK BARANG", beliDetail)
             const res = await fetch(`${API_URL}/api/pembelian`, {
                 method: "POST",
                 headers: {
@@ -30,10 +31,10 @@ const useCreatePembelian = () => {
 
             if (!res.ok) {
                 setError(data.message)
-                return
+                return { success: false, message: data.message }
             }
 
-            return data.data
+            return { success: true, data: data.data }
         } catch (error) {
             console.log(error)
 

@@ -32,7 +32,7 @@ const Page = () => {
     }
 
     const [selectedRows, setSelectedRows] = useState<Set<string>>(
-        new Set([""])
+        new Set()
     )
 
     const selectAll = selectedRows.size === barangsWithStok.length
